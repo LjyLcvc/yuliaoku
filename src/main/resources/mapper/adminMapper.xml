@@ -52,7 +52,7 @@
     <select id="query" resultType="Admin">
         select admin.* from admin
         <include refid="queryWhere"></include>
-        order by admin.id asc limit #{offset},#{length}
+        order by admin.createTime asc limit #{offset},#{length}
     </select>
 
     <select id="querySize" resultType="Integer">

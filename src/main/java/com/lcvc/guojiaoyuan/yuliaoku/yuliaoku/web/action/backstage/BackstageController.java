@@ -27,7 +27,7 @@ public class BackstageController {
         Map<String, Object> map=new HashMap<String, Object>();
         map.put(Constant.JSON_CODE, JsonCode.ERROR.getValue());
         if(adminService.login(username, password)){//如果登录成功
-            Admin admin=adminService.getAdmin(username);
+            Admin admin=adminService.get(username);
             session.setAttribute("admin",admin);
             map.put(Constant.JSON_CODE, JsonCode.SUCCESS.getValue());
             //map.put(Constant.JSON_DATA,admin.getUsername());//将账户名值传递到前端先存储，供后端交互

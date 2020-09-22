@@ -63,8 +63,8 @@ public class CorsConfig implements WebMvcConfigurer {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true); // 允许cookies跨域
-        //config.addAllowedOrigin("*");
-        config.setAllowedOrigins(originsList);
+        config.addAllowedOrigin("*");
+        //config.setAllowedOrigins(originsList);
       /*  config.addAllowedOrigin("http://localhost:80");//用于提供给学生访问测试，如果是正式应用中这里尽量限制来源域，如http://127.0.0.1:8020，降低安全风险
         config.addAllowedOrigin("http://127.0.0.1:80");
         config.addAllowedOrigin("http://localhost:8080");

@@ -23,7 +23,7 @@ import java.util.Calendar;
 @Transactional(propagation = Propagation.REQUIRED,isolation = Isolation.DEFAULT,timeout=36000,rollbackFor=Exception.class)
 @Validated//表示开启sprint的校检框架，会自动扫描方法里的@Valid（@Valid注解一般写在接口即可）
 @Service
-public class AdminService {
+public class AdminService备用 {
     @Autowired
     private AdminDao adminDao;
 
@@ -120,6 +120,9 @@ public class AdminService {
      * @param usernames 多个账户的主键集合
      */
     public void deletes(Admin adminOfOperator,String[] usernames){
+        if(!this.isSuperAdmin(adminOfOperator)){//如果不是超级管理员
+            throw new MyWebException("账户编辑失败：您没有管理权限");
+        }
         //先进行验证
         if(usernames.length>0){//只有集合大于0才执行删除
             for(String username:usernames){
@@ -144,10 +147,14 @@ public class AdminService {
      * 1.账户名、姓名、角色不能为空
      * 2.账户名不能重名
      * 3.密码默认是123456
+     * @param adminOfOperator 操作的账户
      * @param admin
      */
-    public void add(@Valid @NotNull Admin admin){
+    public void add(@NotNull Admin adminOfOperator,@Valid @NotNull Admin admin){
         //前面必须经过spring验证框架的验证
+        if(!this.isSuperAdmin(adminOfOperator)){//如果不是超级管理员
+            throw new MyWebException("账户添加失败：您没有管理权限");
+        }
         if(admin!=null){
             if(admin.getUsername()==null){
                 throw new MyWebException("账户添加失败：账户名不能为空");
@@ -191,21 +198,15 @@ public class AdminService {
     public void update(@Valid @NotNull Admin admin) {
         //前面必须经过spring验证框架的验证
         if (admin.getUsername() == null) {
-            throw new MyWebException("账户编辑失败：账户名不能为空");
+            throw new MyWebException("账户添加失败：账户名不能为空");
         }
         Admin adminEdit = new Admin(admin.getUsername());//获取编辑账户的原始信息
-        if(adminEdit!=null){
-            Integer role = admin.getRole();
-            if (role != null) {//如果前台传递了该字段
-                if (role >= 3 || role <= 0) {
-                    throw new MyWebException("账户编辑失败：用户身份只能是普通用户或是管理员");
-                }
+        Integer role = admin.getRole();
+        if (role != null) {//如果前台传递了该字段
+            if (role >= 3 || role <= 0) {
+                throw new MyWebException("账户添加失败：用户身份只能是普通用户或是管理员");
             }
-            admin.setPassword(null);//不修改密码字段
-        }else{
-            throw new MyWebException("账户编辑失败：该账户不存在");
         }
-
     }
 
     /**
@@ -218,26 +219,21 @@ public class AdminService {
      * @param admin 被操作的账户
      */
     public void update(@NotNull Admin adminOfOperator,@Valid @NotNull Admin admin) {
-       /* if(!this.isSuperAdmin(adminOfOperator)){//如果不是超级管理员
+        if(!this.isSuperAdmin(adminOfOperator)){//如果不是超级管理员
             throw new MyWebException("账户编辑失败：您没有管理权限");
-        }*/
+        }
         //前面必须经过spring验证框架的验证
         if (admin.getUsername() == null) {
             throw new MyWebException("账户编辑失败：账户名不能为空");
         }
-        Admin adminEdit = adminDao.get(admin.getUsername());//获取编辑账户的原始信息
-        if(adminEdit!=null){
-            Integer role = admin.getRole();
-            if (role != null) {//如果前台传递了该字段
-                if (role >= 3 || role <= 0) {
-                    throw new MyWebException("账户编辑失败：用户身份只能是普通用户或是管理员");
-                }
+        Admin adminEdit = new Admin(admin.getUsername());//获取编辑账户的原始信息
+        Integer role = admin.getRole();
+        if (role != null) {//如果前台传递了该字段
+            if (role >= 3 || role <= 0) {
+                throw new MyWebException("账户编辑失败：用户身份只能是普通用户或是管理员");
             }
-            admin.setPassword(null);//不修改密码字段
-            adminDao.update(admin);//编辑账户
-        }else{
-            throw new MyWebException("账户编辑失败：该账户不存在");
         }
+        adminDao.update(admin);//编辑账户
     }
 
 }

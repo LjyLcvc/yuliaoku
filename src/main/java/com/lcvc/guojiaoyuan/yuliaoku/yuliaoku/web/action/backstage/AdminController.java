@@ -8,10 +8,7 @@ import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.form.AdminPasswordEditForm;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.service.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 import java.util.HashMap;
@@ -32,6 +29,19 @@ public class AdminController {
         adminService.updatePassword(admin.getUsername(),adminPasswordEditForm.getPassword(),adminPasswordEditForm.getNewPass(),adminPasswordEditForm.getRePass());
         map.put(Constant.JSON_CODE, JsonCode.SUCCESS.getValue());
         map.put(Constant.JSON_MESSAGE, "密码修改成功");
+        return map;
+    }
+
+    /**
+     * 编辑个人的账户信息，不包括密码
+     * @param user 个人账户信息
+     * @return
+     */
+    @PutMapping
+    public Map<String, Object> updateAdmin(@RequestBody Admin user, HttpSession session){
+        Map<String, Object> map=new HashMap<String, Object>();
+        adminService.update(user);
+        map.put(Constant.JSON_CODE, JsonCode.SUCCESS.getValue());
         return map;
     }
 

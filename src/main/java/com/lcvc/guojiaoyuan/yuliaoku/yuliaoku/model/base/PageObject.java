@@ -7,7 +7,7 @@ import java.util.List;
  * @author ljy
  */
 public class PageObject<T> {
-	private int limit;//每页显示的记录数
+	private int limit;//每页显示的记录数,默认20条记录
 	private int maxPage;//显示的最大页数
 	private int page;//显示当前页数
 	private int totalRecords;//总记录数
