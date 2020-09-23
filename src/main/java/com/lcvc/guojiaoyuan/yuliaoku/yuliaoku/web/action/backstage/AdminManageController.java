@@ -30,7 +30,7 @@ public class AdminManageController {
      * @param limit 每页记录数，如果为null则默认为20
      * @param adminQuery 查询条件
      */
-    @GetMapping("/admins")
+    @GetMapping("/query")
     public Map<String, Object> adminManage(Integer page, Integer limit, AdminQuery adminQuery){
         Map<String, Object> map=new HashMap<String, Object>();
         map.put(Constant.JSON_CODE, JsonCode.SUCCESS.getValue());
@@ -71,7 +71,7 @@ public class AdminManageController {
      * @return
      */
     @GetMapping("/{username}")
-    public Map<String, Object>  updateAdmin(@PathVariable String username){
+    public Map<String, Object>  getAdmin(@PathVariable String username){
         Map<String, Object> map=new HashMap<String, Object>();
         map.put(Constant.JSON_CODE, JsonCode.SUCCESS.getValue());
         map.put(Constant.JSON_DATA,adminService.get(username));

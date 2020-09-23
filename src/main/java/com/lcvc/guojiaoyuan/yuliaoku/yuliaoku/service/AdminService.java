@@ -62,7 +62,7 @@ public class AdminService {
     }
 
     /**
-     * 根据账户名读取指定标识符
+     * 根据账户名读取指定账户
      * @param username
      * @return
      */
@@ -193,7 +193,7 @@ public class AdminService {
         if (admin.getUsername() == null) {
             throw new MyWebException("账户编辑失败：账户名不能为空");
         }
-        Admin adminEdit = new Admin(admin.getUsername());//获取编辑账户的原始信息
+        Admin adminEdit = adminDao.get(admin.getUsername());//获取编辑账户的原始信息
         if(adminEdit!=null){
             Integer role = admin.getRole();
             if (role != null) {//如果前台传递了该字段

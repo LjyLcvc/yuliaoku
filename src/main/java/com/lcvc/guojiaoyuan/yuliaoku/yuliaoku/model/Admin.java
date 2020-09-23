@@ -1,15 +1,17 @@
 package com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.validator.constraints.Length;
 
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * 管理账户表
  */
 public class Admin {
 
-    @Length(min = 2, max = 30, message = "账户名长度必须在 {min} - {max} 之间")
+    @Length(min = 2, max = 20, message = "账户名长度必须在 {min} - {max} 之间")
     private String username;
     @Length(min = 6, max = 20, message = "原密码长度必须在 {min} - {max} 之间")
     private String password;
@@ -33,6 +35,8 @@ public class Admin {
         this.username = username;
     }
 
+    //获取当前账户的密码
+    @JsonIgnore
     public String getPassword() {
         return password;
     }
@@ -63,5 +67,30 @@ public class Admin {
 
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Admin admin = (Admin) o;
+        return Objects.equals(username, admin.username);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(username);
+    }
+
+    /**
+     * 判断是否是超级管理员
+     * @return
+     */
+    public boolean isSuperAdmin(){
+        boolean judge=false;//默认不是
+        if(role==1){
+            judge=true;
+        }
+        return judge;
     }
 }

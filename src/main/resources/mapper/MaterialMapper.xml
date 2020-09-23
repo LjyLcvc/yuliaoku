@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 指明这个映射文件adminMapper.xml的逻辑路径,如果与接口建立映射，那么逻辑路径应该与接口的物理路径一致-->
+<mapper namespace="com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.dao.MaterialDao">
+
+    <!--==================================基本查询============================-->
+
+    <!--自定义返回的类型-->
+    <resultMap id="material" type="Material">
+        <!--定义主键，否则可能会与其他表的id冲突，导致无法获取值-->
+        <id  property="id" column="id" javaType="java.lang.Integer"/>
+        <association property="materialType" javaType="MaterialType" column="materialTypeId" select="com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.dao.MaterialTypeDao.getSimple">
+        </association>
+    </resultMap>
+
+    <select id="getSimple"  resultType="Material">
+        select * from material where id=#{id}
+    </select>
+
+
+    <select id="get"  resultMap="material">
+        select * from material where id=#{id}
+    </select>
+
+   <insert id="save">
+          insert into material(id,chinese,english,spanish)
+          values(null,#{chinese},#{english},#{spanish})
+    </insert>
+
+    <update id="update" parameterType="Material">
+        update material
+        <!-- 使用set标签可以将动态的配置SET 关键字，和剔除追加到条件末尾的任何不相关的逗号。 -->
+        <set>
+            <if test="chinese!=null and chinese.length()>0">chinese=#{chinese},</if>
+            <if test="english!=null and english.length()>0">english=#{english},</if>
+            <if test="spanish!=null and spanish.length()>0">spanish=#{spanish},</if>
+        </set>
+        where id=#{id}
+    </update>
+
+
+    <delete id="delete" >
+        delete from material where id=#{id}
+    </delete>
+
+    <delete id="deletes" >
+        delete from material where 1=0
+        <if test="array != null and array.length> 0">
+            OR id in
+            <foreach item="item" collection="array" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </delete>
+
+    <select id="total"  resultType="Integer">
+        select count(1) from material
+    </select>
+
+    <select id="readAll" resultMap="material">
+        select * from material order by id asc
+    </select>
+
+    <select id="query" resultMap="material">
+        select material.* from material
+        <include refid="queryWhere"></include>
+        order by material.id asc limit #{offset},#{length}
+    </select>
+
+    <select id="querySize" resultType="Integer">
+        select count(1) from (
+        select material.id from material
+        <include refid="queryWhere"></include>
+        ) u
+    </select>
+
+    <!--统一查询的条件，方便用于分页等查询，这里提供给query和querySize调用-->
+    <sql id="queryWhere">
+        <if test="objectQuery!=null">
+            <where>
+                <if test="objectQuery.chinese!=null and objectQuery.chinese.length()>0">
+                    <!-- bind，重新定义一个变量，可用于模糊查询等，并且可以直接覆盖原变量 -->
+                    <bind name="chinese" value="'%' + _parameter.objectQuery.chinese + '%'" />
+                    and material.chinese like #{chinese}
+                </if>
+                <if test="objectQuery.english!=null and objectQuery.english.length()>0">
+                    <!-- bind，重新定义一个变量，可用于模糊查询等，并且可以直接覆盖原变量 -->
+                    <bind name="english" value="'%' + _parameter.objectQuery.english + '%'" />
+                    and material.english like #{english}
+                </if>
+                <if test="objectQuery.spanish!=null and objectQuery.spanish.length()>0">
+                    <!-- bind，重新定义一个变量，可用于模糊查询等，并且可以直接覆盖原变量 -->
+                    <bind name="spanish" value="'%' + _parameter.objectQuery.spanish + '%'" />
+                    and material.spanish like #{spanish}
+                </if>
+            </where>
+        </if>
+    </sql>
+
+</mapper>

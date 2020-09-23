@@ -22,6 +22,24 @@ public class AdminController {
     @Autowired
     private AdminService adminService;
 
+    /**
+     * 获取当前登陆账户信息
+     * @param session
+     * @return
+     */
+    @GetMapping
+    public Map<String, Object> getAdminOfLogin(HttpSession session){
+        Map<String, Object> map=new HashMap<String, Object>();
+        map.put(Constant.JSON_DATA,session.getAttribute("admin"));//将账户名值传递到前端先存储，供后端交互
+        return map;
+    }
+
+    /**
+     * 修改密码
+     * @param adminPasswordEditForm 密码参数
+     * @param session
+     * @return
+     */
     @PatchMapping("/password")
     public Map<String, Object> updatePassword(@RequestBody @Validated AdminPasswordEditForm adminPasswordEditForm, HttpSession session) {
         Admin admin=((Admin) session.getAttribute("admin"));
