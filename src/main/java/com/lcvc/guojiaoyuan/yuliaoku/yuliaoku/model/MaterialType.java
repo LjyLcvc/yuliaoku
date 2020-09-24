@@ -13,7 +13,7 @@ public class MaterialType {
     @Length(min = 1, max = 30, message = "物资类别名称的长度必须在 {min} - {max} 之间")
     private String name;//物资类别名称，用于工作子表，分类管理
     //@NotNull(message = "物料的排序参数不能为空")
-    private Integer sort;//排序，升序
+    private Integer sort;//排序，升序W
 
     public MaterialType() {
     }

@@ -22,9 +22,18 @@
         select * from material where id=#{id}
     </select>
 
-   <insert id="save">
-          insert into material(id,chinese,english,spanish)
-          values(null,#{chinese},#{english},#{spanish})
+   <insert id="save"  useGeneratedKeys="true" keyProperty="id">
+          insert into material(id,materialTypeId,chinese,english,spanish)
+          values(null,#{materialType.id},#{chinese},#{english},#{spanish})
+    </insert>
+
+    <insert id="saves">
+        <if test="list.size()>0">
+            insert into material(id,materialTypeId,chinese,english,spanish) values
+            <foreach collection="list" item="item" index="index" separator=",">
+                (null,#{item.materialType.id},#{item.chinese},#{item.english},#{item.spanish})
+            </foreach>
+        </if>
     </insert>
 
     <update id="update" parameterType="Material">

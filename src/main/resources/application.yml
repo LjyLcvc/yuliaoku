@@ -37,3 +37,9 @@ logging:
     org.springframework: error
   file:
     name: target/log/yuliaoku.log
+myFile: #自定义变量
+  #文件上传目录（注意Linux和Windows上的目录结构不同）
+  uploadFolder: c:/yuliaoku/upload/
+  #file.uploadFolder=/home/upload/#linux
+  #静态资源对外暴露的访问路径
+  staticAccessPath: /upload/**

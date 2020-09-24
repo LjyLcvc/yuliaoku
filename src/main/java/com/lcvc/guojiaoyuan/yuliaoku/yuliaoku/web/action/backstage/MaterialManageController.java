@@ -5,10 +5,13 @@ import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.Material;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.base.Constant;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.base.JsonCode;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.base.PageObject;
+import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.exception.MyWebException;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.query.MaterialQuery;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.service.MaterialService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,6 +25,8 @@ public class MaterialManageController {
 
     @Autowired
     private MaterialService materialService;
+    @Value("${myFile.uploadFolder}")
+    private String uploadFolder;//注入系统默认的上传路径
 
     /**
      * 展示所有的物资列表，按照优先级升序排序
@@ -78,6 +83,25 @@ public class MaterialManageController {
         map.put(Constant.JSON_CODE, JsonCode.SUCCESS.getValue());
         return map;
     }
+
+    /**
+     * 上传物资表格，并导入到项目中
+     * @param file 要上传的excel
+     */
+    @PostMapping("/manage/excel")
+    public Map<String, Object> uploadExcel(MultipartFile file) throws Exception{
+        Map<String, Object> map=new HashMap<String, Object>();
+        map.put(Constant.JSON_CODE, JsonCode.ERROR.getValue());//默认失败
+        if(file!=null&&!file.isEmpty()){
+            //String filePath=uploadFolder+Constant.MATERIAL_EXCEL_UPLOAD_PATH;//获取excel上传后保存的物理路径
+            materialService.addMaterialsFromExcel(file.getInputStream());
+            map.put(Constant.JSON_CODE, JsonCode.SUCCESS.getValue());
+        }else{
+            throw new MyWebException("操作失败：请选择上传文件");
+        }
+        return map;
+    }
+
 
 
 

@@ -21,7 +21,7 @@
         select * from material_english_history where id=#{id}
     </select>
 
-   <insert id="save">
+   <insert id="save"  useGeneratedKeys="true" keyProperty="id">
           insert into material_english_history(id,materialId,operatorId,english,createTime,audit,auditorId,auditTime)
           values(null,#{material.id},#{operator.id},#{english},now(),#{audit},#{auditor.id},#{auditTime})
     </insert>

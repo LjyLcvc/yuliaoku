@@ -12,7 +12,7 @@
         select * from material_type where id=#{id}
     </select>
 
-   <insert id="save">
+   <insert id="save"  useGeneratedKeys="true" keyProperty="id">
           insert into material_type(id,name,sort)
           values(null,#{name},#{sort})
     </insert>

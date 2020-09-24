@@ -12,7 +12,7 @@ public class MaterialEnglishHistory {
     private Integer id;
     private Material material;//对应的物料表信息
     private Admin operator;//操作此次记录的人
-    @Length(min = 1, max = 50, message = "物资的英文长度必须在 {min} - {max} 之间")
+    @Length(min = 1, max = 200, message = "物资的英文长度必须在 {min} - {max} 之间")
     private String english;//修订的物料英文名
     private Date createTime;//创建时间，该词条是否审核通过
     private Boolean audit;//表示该表单是否审核通过,true表示通过，false表示不通过

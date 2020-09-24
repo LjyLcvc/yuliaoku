@@ -14,9 +14,9 @@ public class Material {
     @NotNull(message = "物资的中文名不能为空")
     @Length(min = 1, max = 50, message = "物资的中文名长度必须在 {min} - {max} 之间")
     private String chinese;//物料的中文名
-    @Length(max = 50, message = "物资的英文长度不能超过 {max} ")
+    @Length(max = 200, message = "物资的英文长度不能超过 {max} ")
     private String english;//物料的英文名
-    @Length(max = 50,message = "物资的西语长度不能超过 {max} ")
+    @Length(max = 200,message = "物资的西语长度不能超过 {max} ")
     private String spanish;//物料的西班牙语
 
 

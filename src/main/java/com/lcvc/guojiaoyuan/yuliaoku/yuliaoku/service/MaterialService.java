@@ -4,9 +4,13 @@ package com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.service;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.dao.AdminDao;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.dao.MaterialDao;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.dao.MaterialEnglishHistoryDao;
+import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.dao.MaterialTypeDao;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.Material;
+import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.MaterialType;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.base.PageObject;
+import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.exception.MyServiceException;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.query.MaterialQuery;
+import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.util.opi.MaterialReadFromExcel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -16,6 +20,9 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Map;
 
 @Transactional(propagation = Propagation.REQUIRED,isolation = Isolation.DEFAULT,timeout=36000,rollbackFor=Exception.class)
 @Validated//表示开启sprint的校检框架，会自动扫描方法里的@Valid（@Valid注解一般写在接口即可）
@@ -23,6 +30,8 @@ import javax.validation.constraints.NotNull;
 public class MaterialService {
     @Autowired
     private AdminDao adminDao;
+    @Autowired
+    private MaterialTypeDao materialTypeDao;
     @Autowired
     private MaterialDao materialDao;
     @Autowired
@@ -77,6 +86,40 @@ public class MaterialService {
     public void add(@Valid @NotNull(message = "表单没有传值到服务端") Material material){
         //前面必须经过spring验证框架的验证
         materialDao.save(material);
+    }
+
+    /**
+     * 导入电子表格
+     * @param inputStream
+     * @return
+     * @throws Exception
+     */
+    public boolean addMaterialsFromExcel(InputStream inputStream) throws Exception {
+        //从上传的excel中得到表格的数据
+        Map<MaterialType, List<Material>> map= MaterialReadFromExcel.getExcel(inputStream);
+        map.forEach((materialType, materials) ->{
+            //对物资类别进行处理
+            if(materialType.getId()!=null){//如果该物资类别已经存在
+                MaterialType materialTypeOfOrigin=materialTypeDao.get(materialType.getId());//判断该记录是否存在
+                if(materialTypeOfOrigin==null){
+                    throw new MyServiceException("操作失败：工作表"+materialType.getName()+"在数据库不存在，请联系技术员核对");
+                }
+                if(!materialType.getName().equals(materialTypeOfOrigin.getName())){//如果名字已经变更
+                    materialTypeOfOrigin.setName(materialTypeOfOrigin.getName());
+                    materialTypeDao.update(materialType);//存储变更后的名字
+                }
+            }else{//如果该物资类别不存在
+                materialType.setSort(100);//优先级默认100
+                materialTypeDao.save(materialType);
+            }
+            //对物资进行处理
+            for(Material material:materials){
+                material.setMaterialType(materialType);//附上所属的物资类别
+            }
+            materialDao.saves(materials);
+        });
+
+        return false;
     }
 
 }
