@@ -15,6 +15,9 @@ public class MaterialType {
     //@NotNull(message = "物料的排序参数不能为空")
     private Integer sort;//排序，升序W
 
+    //非数据库字段
+    private Integer materialNumber;//物料数量
+
     public MaterialType() {
     }
 
@@ -44,5 +47,13 @@ public class MaterialType {
 
     public void setSort(Integer sort) {
         this.sort = sort;
+    }
+
+    public Integer getMaterialNumber() {
+        return materialNumber;
+    }
+
+    public void setMaterialNumber(Integer materialNumber) {
+        this.materialNumber = materialNumber;
     }
 }

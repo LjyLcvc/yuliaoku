@@ -32,7 +32,12 @@ public class MaterialTypeService {
 
     public List<MaterialType> queryAll(){
         List<MaterialType> list=materialTypeDao.readAll(null);
-        //后续要对物资表进行判断
+        for(MaterialType materialType:list){
+            //获取每个类别下的物资数量
+            MaterialQuery materialQuery=new MaterialQuery();
+            materialQuery.setMaterialType(materialType);
+            materialType.setMaterialNumber(materialDao.querySize(materialQuery));
+        }
         return list;
     }
 
