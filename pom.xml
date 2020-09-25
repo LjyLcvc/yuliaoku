@@ -6,6 +6,7 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>2.3.4.RELEASE</version>
+<!--        <version>2.1.8.RELEASE</version>-->
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.lcvc.guojiaoyuan.yuliaoku</groupId>
@@ -17,7 +18,7 @@
     <properties>
         <java.version>1.8</java.version>
         <swagger2.version>2.9.2</swagger2.version>
-        <!--hibernate验证框架，新的spring boot框架不在提供-->
+        <!--hibernate验证框架，新的spring boot框架2.3后不在提供-->
         <hibernate.validate.version>6.1.5.Final</hibernate.validate.version>
         <!--mysal驱动包-->
         <mysql.version>8.0.16</mysql.version>
@@ -52,6 +53,18 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+
+        <!--本包是针对谷歌浏览器的SameSite设置-->
+       <!-- <dependency>
+            <groupId>org.springframework.session</groupId>
+            <artifactId>spring-session-data-redis</artifactId>
+        </dependency>-->
+        <!--本包是针对rg.springframework.session的依赖包-->
+       <!-- <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>3.3.0</version>
+        </dependency>-->
 
         <!--mysql驱动包-->
         <!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->

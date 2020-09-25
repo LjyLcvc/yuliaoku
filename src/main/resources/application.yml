@@ -1,6 +1,11 @@
 #服务端配置
 server:
   port: 8091   #端口号
+#  ssl:
+#    protocol: TLS
+#    key-store: classpath:ljy_yuliaoku.keystore #证书在项目中的位置
+#    key-store-password: abc123456 #密码
+#    key-alias: ljy_yuliaoku
   servlet:
     #context-path: /schoolroll  #在项目路径上加项目名，注意，spring boot2和spring boot1不同
     session:
@@ -31,6 +36,13 @@ spring:
     multipart:
       maxFileSize: 20MB #单个上传文件的最大限制
       maxRequestSize: 50MB  #所有上传文件的最大限制
+#  redis:
+#    host: localhost #redis ip地址
+#    port: 6379 #端口
+#    password: #redis密码，一般不进行设置
+#    database: 0  #代表使用的是redis默认提供的db0这个数据库。
+#    redis-maxIdle: 500  #redis server的最大空闲数。
+#    redis-maxWait: 4000  #是连接redis时的最大等待毫秒数。
 logging:
   level:
     com.jhxx.schoolroll: error

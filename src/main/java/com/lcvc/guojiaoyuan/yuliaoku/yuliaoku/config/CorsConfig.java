@@ -57,7 +57,6 @@ public class CorsConfig implements WebMvcConfigurer {
     }
 
     //此处解决上面addCorsMappings无法覆盖拦截器跨域的问题
-    //由于spring security的跨域与这个过滤器冲突，故专门针对跨域写了一个过滤器并配置，该过滤器取消
     @Bean
     public FilterRegistrationBean corsFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -90,4 +89,31 @@ public class CorsConfig implements WebMvcConfigurer {
         bean.setOrder(Integer.MIN_VALUE);//设置成优先级最高
         return bean;
     }
+
+
+    /**
+     * Description 解决SameSite=Lax导致前端无法携带Cookie的坑
+     * 说明：
+     * 如果不加入下述代码，前端访问时每次session都不一样，每次都是新的会话，导致无法保存session
+     * @return
+     */
+   /* @Bean
+    public CookieSerializer httpSessionIdResolver() {
+        DefaultCookieSerializer cookieSerializer = new DefaultCookieSerializer();
+        //cookieSerializer.setCookieName("token");
+        cookieSerializer.setUseHttpOnlyCookie(false);
+        cookieSerializer.setSameSite("None");// 取消仅限同一站点设置
+        //cookieSerializer.setUseSecureCookie(true);
+        return cookieSerializer;
+    }*/
+
+   /* @Bean
+    public CookieSerializer httpSessionIdResolver() {
+        DefaultCookieSerializer cookieSerializer = new DefaultCookieSerializer();
+        cookieSerializer.setUseHttpOnlyCookie(false);
+        cookieSerializer.setSameSite("None");
+        cookieSerializer.setCookiePath("/");
+        cookieSerializer.setUseSecureCookie(true);
+        return cookieSerializer;
+    }*/
 }

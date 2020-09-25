@@ -42,7 +42,7 @@ public class LoginForAdminInterceptor extends HandlerInterceptorAdapter {
             Object adminObject=session.getAttribute("admin");
            if(adminObject==null){
                 Map<String, Object> map = new HashMap<String, Object>();
-                map.put(Constant.JSON_CODE, JsonCode.ERROR.getValue());
+                map.put(Constant.JSON_CODE, JsonCode.LOGIN.getValue());
                 map.put(Constant.JSON_MESSAGE, "请先登录");
                 JSONObject jsonObject= JSONObject.fromObject(map);
                 //注意，必须加上这个，才能让前端JS认为是JSON格式来进行相应处理

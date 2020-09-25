@@ -22,6 +22,13 @@ public class MaterialTranslationController {
     @Autowired
     private MaterialService materialService;
 
+    /**
+     * 中译英
+     * @param page
+     * @param limit
+     * @param chinese
+     * @return
+     */
     @GetMapping(value = "/chineseToEngLish")
     public Map<String, Object> chineseToEngLish( Integer page, Integer limit,@NotBlank(message = "必须输入中文")String chinese){
         Map<String, Object> map=new HashMap<String, Object>();
@@ -34,6 +41,13 @@ public class MaterialTranslationController {
     }
 
 
+    /**
+     * 英译中
+     * @param page
+     * @param limit
+     * @param english
+     * @return
+     */
     @GetMapping(value = "/engLishToChinese")
     public Map<String, Object> engLishToChinese(Integer page, Integer limit,@NotBlank(message = "必须输入英文")String english){
         Map<String, Object> map=new HashMap<String, Object>();

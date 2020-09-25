@@ -9,7 +9,7 @@ import java.util.Objects;
 /**
  * 管理账户表
  */
-public class Admin {
+public class Admin implements java.io.Serializable{
 
     @Length(min = 2, max = 20, message = "账户名长度必须在 {min} - {max} 之间")
     private String username;
