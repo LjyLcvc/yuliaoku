@@ -67,7 +67,9 @@
     </select>
 
     <select id="readAll" resultMap="material">
-        select * from material order by id asc
+        select material.* from material
+        <include refid="queryWhere"></include>
+        order by material.id asc
     </select>
 
     <select id="query" resultMap="material">

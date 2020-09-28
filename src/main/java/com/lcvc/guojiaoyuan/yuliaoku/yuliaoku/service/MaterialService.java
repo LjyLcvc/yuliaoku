@@ -21,6 +21,7 @@ import org.springframework.validation.annotation.Validated;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.io.InputStream;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -88,13 +89,31 @@ public class MaterialService {
         materialDao.save(material);
     }
 
+
+    /**
+     * 读取物料的所有信息
+     * 键值：物料类别-》物料类别下的所有物料信息。
+     * @return
+     */
+    public Map<MaterialType, List<Material>> getAllMaterials (){
+        Map<MaterialType, List<Material>> map=new LinkedHashMap<>();
+        List<MaterialType> materialTypes=materialTypeDao.readAll(null);//读取所有的栏目
+        for(MaterialType materialType:materialTypes){
+            MaterialQuery materialQuery=new MaterialQuery();
+            materialQuery.setMaterialType(materialType);
+            List<Material> materials=materialDao.readAll(materialQuery);//读取指定类别的物料
+            map.put(materialType,materials);
+        }
+        return map;
+    }
+
     /**
      * 导入电子表格
      * @param inputStream
      * @return
      * @throws Exception
      */
-    public boolean addMaterialsFromExcel(InputStream inputStream) throws Exception {
+    public void addMaterialsFromExcel(InputStream inputStream) throws Exception {
         //从上传的excel中得到表格的数据
         Map<MaterialType, List<Material>> map= MaterialReadFromExcel.getExcel(inputStream);
         map.forEach((materialType, materials) ->{
@@ -118,8 +137,6 @@ public class MaterialService {
             }
             materialDao.saves(materials);
         });
-
-        return false;
     }
 
 }
