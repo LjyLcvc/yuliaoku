@@ -32,6 +32,7 @@
         <set>
             <if test="material!=null and material.id!=null">materialId=#{material.id},</if>
             <if test="english!=null and english.length()>0">english=#{english},</if>
+            <if test="audit!=null">audit=#{audit},</if>
         </set>
         where id=#{id}
     </update>
@@ -112,4 +113,14 @@
     <delete id="deleteByMaterial" >
         delete from material_english_history where materialId=#{materialId}
     </delete>
+
+    <update id="updateOfAuditRefuse" >
+        update material_english_history set audit=false where 1=0
+        <if test="array != null and array.length> 0">
+            OR id in
+            <foreach item="item" collection="array" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </update>
 </mapper>

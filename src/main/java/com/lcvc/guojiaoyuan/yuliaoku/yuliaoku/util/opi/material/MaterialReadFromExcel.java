@@ -1,4 +1,4 @@
-package com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.util.opi;
+package com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.util.opi.material;
 
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.Material;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.MaterialType;
@@ -21,6 +21,7 @@ public class MaterialReadFromExcel {
     /**
      * 从输入流中读取excel的内容
      * 说明：
+     * 1.已经有id的记录不进行读取
      * @param inputStream
      * @return
      */
@@ -45,7 +46,16 @@ public class MaterialReadFromExcel {
             //根据表格的实际记录行数，逐行读取记录——第一行是标题行，不进行读取
             for (int rowNum = 1; rowNum <= sheet.getLastRowNum(); rowNum++) {
                 XSSFRow row = sheet.getRow(rowNum);//获取指定的行
-                String chinese=MethorOfPOI.getValue(row.getCell(0));//第一列是中文名
+                String idString=MethorOfPOI.getValue(row.getCell(0));//第一列是id，序号
+                if(!StringUtils.isEmpty(idString)){//如果不为空
+                    try {
+                        Integer.parseInt(idString);//转化为数字
+                        continue;//如果转换成功，则终止此次循环，即该条记录不导入
+                    } catch (NumberFormatException e) {
+                        throw new MyServiceException("操作失败：导入的表格的工作簿（"+name+"）第"+(rowNum+1)+"行的序号列必须是整数");
+                    }
+                }
+                String chinese=MethorOfPOI.getValue(row.getCell(1));//第2列是中文名
                 if(StringUtils.isEmpty(chinese)){//如果中文名不存在，则说明该表格没有下一行。因为通过getLastRowNum可能因电子表格不一致导致不准确
                     break;
                 }
@@ -55,7 +65,7 @@ public class MaterialReadFromExcel {
                 }
                 Material material=new Material();
                 material.setChinese(chinese);//设置中文名
-                String english=MethorOfPOI.getValue(row.getCell(1));
+                String english=MethorOfPOI.getValue(row.getCell(2));
                 if(!StringUtils.isEmpty(english)){//如果不为空
                     english=english.trim();
                     if(english.length()>200){
@@ -63,7 +73,7 @@ public class MaterialReadFromExcel {
                     }
                     material.setEnglish(english);
                 }
-                String spanish=MethorOfPOI.getValue(row.getCell(2));
+                String spanish=MethorOfPOI.getValue(row.getCell(3));
                 if(!StringUtils.isEmpty(spanish)){//如果不为空
                     spanish=spanish.trim();
                     if(spanish.length()>200){

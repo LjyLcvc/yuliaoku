@@ -9,7 +9,7 @@ import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.base.PageObject;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.exception.MyWebException;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.query.MaterialQuery;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.service.MaterialService;
-import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.util.opi.MaterialWriteForExcel;
+import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.util.opi.material.MaterialWriteForExcel;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -102,8 +102,9 @@ public class MaterialManageController {
         map.put(Constant.JSON_CODE, JsonCode.ERROR.getValue());//默认失败
         if(file!=null&&!file.isEmpty()){
             //String filePath=uploadFolder+Constant.MATERIAL_EXCEL_UPLOAD_PATH;//获取excel上传后保存的物理路径
-            materialService.addMaterialsFromExcel(file.getInputStream());
+            int number=materialService.addMaterialsFromExcel(file.getInputStream());
             map.put(Constant.JSON_CODE, JsonCode.SUCCESS.getValue());
+            map.put(Constant.JSON_DATA,number);
         }else{
             throw new MyWebException("操作失败：请选择上传文件");
         }
@@ -111,7 +112,7 @@ public class MaterialManageController {
     }
 
     /**
-     * 上传物资表格，并导入到项目中
+     * 将数据库中的物资记录以物资表格供前端下载
      */
     @GetMapping("/manage/excel")
     public String getTable5(HttpServletResponse response)  throws Exception{

@@ -52,12 +52,14 @@ public class AdminController {
 
     /**
      * 编辑个人的账户信息，不包括密码
-     * @param user 个人账户信息
+     * @param user 个人账户信息，不接收账户名
      * @return
      */
     @PutMapping
     public Map<String, Object> updateAdmin(@RequestBody Admin user, HttpSession session){
         Map<String, Object> map=new HashMap<String, Object>();
+        Admin admin=((Admin) session.getAttribute("admin"));
+        user.setUsername(admin.getUsername());//更改账户名为当前登陆账户，防止前台恶意修改
         adminService.update(user);
         map.put(Constant.JSON_CODE, JsonCode.SUCCESS.getValue());
         return map;

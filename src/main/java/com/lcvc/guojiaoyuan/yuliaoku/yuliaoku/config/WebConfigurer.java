@@ -35,8 +35,9 @@ public class WebConfigurer implements WebMvcConfigurer {
                 }});
        //管理员登陆拦截器
         registry.addInterceptor(loginForSuperAdminInterceptor())
-                .addPathPatterns("/api/backstage/adminmanage/**")//要拦截的路径
-                .addPathPatterns("/api/backstage/materialmanage/**")//要拦截的路径
+                .addPathPatterns("/api/backstage/admin/manage/**")//要拦截的路径
+                .addPathPatterns("/api/backstage/materialtype/manage/**")//要拦截的路径
+                .addPathPatterns("/api/backstage/material/manage/**")//要拦截的路径
                 .excludePathPatterns(new LinkedList<String>(){{//不拦截的路径（一般指addPathPatterns中包含，但是不进行拦截的特例）
                     add("/api/backstage/materialmanage/query");
                 }});

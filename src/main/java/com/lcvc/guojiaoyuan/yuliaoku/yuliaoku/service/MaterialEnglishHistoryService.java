@@ -92,8 +92,66 @@ public class MaterialEnglishHistoryService {
     }
 
     /**
-     * 添加操作记录
+     * 审核物料提议，适合单条记录审核或是审核通过使用
+     * 1.必须是管理员才能审核
+     * 2.审核过的提议不能再次审核
+     * @param materialEnglishHistoryId
+     * @param audit 审核状态
+     * @param auditor 审核人
+     */
+    public void updateOfAudit(@NotNull(message = "缺少主键") Integer materialEnglishHistoryId,@NotNull(message = "必须填写审核结果") Boolean audit,Admin auditor){
+        MaterialEnglishHistory materialEnglishHistory=materialEnglishHistoryDao.get(materialEnglishHistoryId);//读取原来的记录
+        if(materialEnglishHistory!=null){
+            if(auditor.isSuperAdmin()){//只有管理员能够审核
+                throw new MyWebException("操作失败：必须是管理员才能审核");
+            }
+            if(materialEnglishHistory.getAudit()!=null){
+                throw new MyServiceException("操作失败：已经审核过的提议不能再次审核");
+            }else{
+                materialEnglishHistory.setAudit(audit);//赋值审核状态
+                if(materialEnglishHistory.getAudit()==true){//如果是true，则更改词库的记录
+                    Material material=materialDao.get(materialEnglishHistory.getMaterial().getId());//获取原有记录
+                    material.setEnglish(materialEnglishHistory.getEnglish());//设置为英文
+                    materialDao.update(material);
+                }
+            }
+            materialEnglishHistoryDao.update(materialEnglishHistory);//将审核状态保存
+        }else{
+            throw new MyWebException("操作失败：该物资提议不存在");
+        }
+    }
+
+
+    /**
+     * 批量将提议改为不通过状态
      * 说明：
+     * 1.必须是管理员才可以操作
+     * 2.已经审核过的帖子不允许再修改状态
+     * @param auditor 操作管理员
+     * @param ids 多个记录的主键集合
+     */
+    public void updateOfAuditRefuse(@NotNull Integer[] ids,Admin auditor){
+        if(!auditor.isSuperAdmin()){//如果是管理员，可以删除
+            throw new MyWebException("操作失败：必须是管理员才能审核");
+        }else{//如果不是管理员，则只能删除自己的操作记录
+            for(Integer id:ids){
+                //查询该记录的审核状态是否已经通过
+                MaterialEnglishHistory materialEnglishHistory=materialEnglishHistoryDao.get(id);
+                if(materialEnglishHistory!=null){//如果该记录存在
+                    if(materialEnglishHistory.getAudit()!=null&&materialEnglishHistory.getAudit()){//如果已经通过审核
+                        throw new MyServiceException("操作失败：已经审核通过的帖子不能再更改状态");
+                    }
+                }
+            }
+            materialEnglishHistoryDao.updateOfAuditRefuse(ids);
+        }
+    }
+
+    /**
+     * 添加提议
+     * 说明：
+     * 1.如果是管理员添加，则直接通过审核，审核人就是自己
+     * 2.如果是普通用户添加，则审核部分信息为空
      * @param materialId 物料的主键，不能为NULL
      * @param english 英文，必须符合规则
      * @param operator 操作员，不能为NULL
@@ -117,27 +175,32 @@ public class MaterialEnglishHistoryService {
                 material.setEnglish(english);
                 materialDao.update(material);
             }
-            materialEnglishHistoryDao.save(materialEnglishHistory);//保存到操作记录中
+            materialEnglishHistoryDao.save(materialEnglishHistory);//保存到提议中
         }else{
             throw new MyWebException("操作失败：该物资不存在");
         }
     }
 
     /**
-     * 修改自己的操作记录
+     * 修改自己的提议
      * 说明：
-     * @param materialEnglishHistoryId 操作记录主键
+     * 1.已经审核过的记录不能修改
+     * 2.不能修改他人的记录
+     * @param materialEnglishHistoryId 提议主键
      * @param materialId 物料主键，如果为NULL则不进行修改
      * @param english 英文，如果为NULL或空字符串，则不进行修改
-     * @param operator 不能为NULL，如果不是操作记录的创建者，则不允许修改
+     * @param operator 不能为NULL，如果不是提议的创建者，则不允许修改
      */
     public void updateByMyself(@NotNull(message = "缺少主键") Integer materialEnglishHistoryId,Integer materialId, String english, Admin operator){
         //前面必须经过spring验证框架的验证
         MaterialEnglishHistory materialEnglishHistory=materialEnglishHistoryDao.get(materialEnglishHistoryId);//读取原来的记录
         if(materialEnglishHistory!=null){
-            //检查操作的是否是创建这
+            if(materialEnglishHistory.getAudit()!=null){
+                throw new MyServiceException("操作失败：已经审核过的提议不能修改");
+            }
+            //检查操作的是否是创建者
             if(!materialEnglishHistory.getOperator().equals(operator)){//如果不是操作者自己
-                throw new MyWebException("操作失败：不能修改他人的操作记录");
+                throw new MyWebException("操作失败：不能修改他人的提议");
             }
             //检查物资编号
             if(materialId!=null&&!materialEnglishHistory.getMaterial().getId().equals(materialId)){//如果物资编号存在且和原来的不同
@@ -157,9 +220,9 @@ public class MaterialEnglishHistoryService {
                     materialEnglishHistory.setEnglish(english);
                 }
             }
-            materialEnglishHistoryDao.update(materialEnglishHistory);//保存到操作记录中
+            materialEnglishHistoryDao.update(materialEnglishHistory);//保存到提议中
         }else{
-            throw new MyWebException("操作失败：该物资操作记录不存在");
+            throw new MyWebException("操作失败：该物资提议不存在");
         }
     }
 

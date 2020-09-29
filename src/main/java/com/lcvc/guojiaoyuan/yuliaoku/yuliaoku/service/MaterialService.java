@@ -10,7 +10,7 @@ import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.MaterialType;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.base.PageObject;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.exception.MyServiceException;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.query.MaterialQuery;
-import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.util.opi.MaterialReadFromExcel;
+import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.util.opi.material.MaterialReadFromExcel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Transactional(propagation = Propagation.REQUIRED,isolation = Isolation.DEFAULT,timeout=36000,rollbackFor=Exception.class)
 @Validated//表示开启sprint的校检框架，会自动扫描方法里的@Valid（@Valid注解一般写在接口即可）
@@ -110,33 +111,38 @@ public class MaterialService {
     /**
      * 导入电子表格
      * @param inputStream
-     * @return
+     * @return 返回成功导入的数量
      * @throws Exception
      */
-    public void addMaterialsFromExcel(InputStream inputStream) throws Exception {
+    public int addMaterialsFromExcel(InputStream inputStream) throws Exception {
+        AtomicInteger count = new AtomicInteger(0);//记录成功导入的记录数.lambda要用这个形式来处理
         //从上传的excel中得到表格的数据
         Map<MaterialType, List<Material>> map= MaterialReadFromExcel.getExcel(inputStream);
-        map.forEach((materialType, materials) ->{
-            //对物资类别进行处理
-            if(materialType.getId()!=null){//如果该物资类别已经存在
-                MaterialType materialTypeOfOrigin=materialTypeDao.get(materialType.getId());//判断该记录是否存在
-                if(materialTypeOfOrigin==null){
-                    throw new MyServiceException("操作失败：工作表"+materialType.getName()+"在数据库不存在，请联系技术员核对");
+        if(map.size()>0){
+            map.forEach((materialType, materials) ->{
+                //对物资类别进行处理
+                if(materialType.getId()!=null){//如果该物资类别已经存在
+                    MaterialType materialTypeOfOrigin=materialTypeDao.get(materialType.getId());//判断该记录是否存在
+                    if(materialTypeOfOrigin==null){
+                        throw new MyServiceException("操作失败：工作表"+materialType.getName()+"在数据库不存在，请联系技术员核对");
+                    }
+                    if(!materialType.getName().equals(materialTypeOfOrigin.getName())){//如果名字已经变更
+                        materialTypeOfOrigin.setName(materialTypeOfOrigin.getName());
+                        materialTypeDao.update(materialType);//存储变更后的名字
+                    }
+                }else{//如果该物资类别不存在
+                    materialType.setSort(100);//优先级默认100
+                    materialTypeDao.save(materialType);
                 }
-                if(!materialType.getName().equals(materialTypeOfOrigin.getName())){//如果名字已经变更
-                    materialTypeOfOrigin.setName(materialTypeOfOrigin.getName());
-                    materialTypeDao.update(materialType);//存储变更后的名字
+                //对物资进行处理
+                for(Material material:materials){
+                    count.incrementAndGet();//计数增加
+                    material.setMaterialType(materialType);//附上所属的物资类别
                 }
-            }else{//如果该物资类别不存在
-                materialType.setSort(100);//优先级默认100
-                materialTypeDao.save(materialType);
-            }
-            //对物资进行处理
-            for(Material material:materials){
-                material.setMaterialType(materialType);//附上所属的物资类别
-            }
-            materialDao.saves(materials);
-        });
+                materialDao.saves(materials);
+            });
+        }
+        return count.intValue();
     }
 
 }

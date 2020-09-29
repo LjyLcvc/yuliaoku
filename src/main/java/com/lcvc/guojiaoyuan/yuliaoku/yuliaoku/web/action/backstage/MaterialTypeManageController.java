@@ -33,30 +33,6 @@ public class MaterialTypeManageController {
     }
 
     /**
-     * 批量删除物资类别记录
-     * @param ids 物资类别记录的标志符集合，前端传递格式：1,2,3
-     */
-    @DeleteMapping("/{ids}")
-    public Map<String, Object> deleteMaterialTypes(@PathVariable("ids")Integer[] ids){
-        Map<String, Object> map=new HashMap<String, Object>();
-        materialTypeService.deletes(ids);
-        map.put(Constant.JSON_CODE, JsonCode.SUCCESS.getValue());
-        return map;
-    }
-
-    /**
-     * 添加物资类别
-     * @param materialType
-     */
-    @PostMapping
-    public Map<String, Object> addMaterialType(@RequestBody MaterialType materialType){
-        Map<String, Object> map=new HashMap<String, Object>();
-        materialTypeService.add(materialType);
-        map.put(Constant.JSON_CODE, JsonCode.SUCCESS.getValue());
-        return map;
-    }
-
-    /**
      * 根据标志符读取指定物资类别记录，如果为NULL表示不存在
      * @param id 指定物资类别的标志符
      * @return
@@ -69,12 +45,38 @@ public class MaterialTypeManageController {
         return map;
     }
 
+    /*============================下面设计是只有管理员才能操作=================================*/
+
+    /**
+     * 批量删除物资类别记录
+     * @param ids 物资类别记录的标志符集合，前端传递格式：1,2,3
+     */
+    @DeleteMapping("/manage/{ids}")
+    public Map<String, Object> deleteMaterialTypes(@PathVariable("ids")Integer[] ids){
+        Map<String, Object> map=new HashMap<String, Object>();
+        materialTypeService.deletes(ids);
+        map.put(Constant.JSON_CODE, JsonCode.SUCCESS.getValue());
+        return map;
+    }
+
+    /**
+     * 添加物资类别
+     * @param materialType
+     */
+    @PostMapping("/manage")
+    public Map<String, Object> addMaterialType(@RequestBody MaterialType materialType){
+        Map<String, Object> map=new HashMap<String, Object>();
+        materialTypeService.add(materialType);
+        map.put(Constant.JSON_CODE, JsonCode.SUCCESS.getValue());
+        return map;
+    }
+
     /**
      * 编辑指定物资类别的信息
      * @param materialType 编辑指定的物资类别的信息
      * @return
      */
-    @PutMapping
+    @PutMapping("/manage")
     public Map<String, Object> updateMaterialType(@RequestBody MaterialType materialType){
         Map<String, Object> map=new HashMap<String, Object>();
         materialTypeService.update(materialType);

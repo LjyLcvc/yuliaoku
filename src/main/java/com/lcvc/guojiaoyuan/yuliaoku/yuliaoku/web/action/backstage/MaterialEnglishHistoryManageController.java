@@ -82,5 +82,32 @@ public class MaterialEnglishHistoryManageController {
 
     /*============================下面设计是只有管理员才能操作=================================*/
 
+    /**
+     * 审核指定提议
+     * @param id 提议
+     * @parm audit 审核状态
+     * @return
+     */
+    @PutMapping("/manage/audit/{id}")
+    public Map<String, Object>  updateOfAudit(@PathVariable Integer id,Boolean audit,HttpSession session){
+        Map<String, Object> map=new HashMap<String, Object>();
+        Admin admin=(Admin)session.getAttribute("admin");
+        map.put(Constant.JSON_CODE, JsonCode.SUCCESS.getValue());
+        materialEnglishHistoryService.updateOfAudit(id,audit,admin);
+        return map;
+    }
 
+    /**
+     * 批量拒绝指定的多个提议
+     * @param ids 提议id集合
+     * @return
+     */
+    @PutMapping("/manage/audit_refuse/{ids}")
+    public Map<String, Object>  updateOfAudit(@PathVariable("ids")Integer[] ids,HttpSession session){
+        Map<String, Object> map=new HashMap<String, Object>();
+        Admin admin=(Admin)session.getAttribute("admin");
+        map.put(Constant.JSON_CODE, JsonCode.SUCCESS.getValue());
+        materialEnglishHistoryService.updateOfAuditRefuse(ids,admin);
+        return map;
+    }
 }

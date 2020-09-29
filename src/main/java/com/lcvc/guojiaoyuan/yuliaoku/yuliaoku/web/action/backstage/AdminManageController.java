@@ -18,7 +18,7 @@ import java.util.Map;
  * 管理员管理模块，用于整站的管理员管理
  */
 @RestController
-@RequestMapping(value = "/api/backstage/adminmanage")
+@RequestMapping(value = "/api/backstage/admin/manage")
 public class AdminManageController {
 
     @Autowired

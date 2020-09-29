@@ -28,12 +28,18 @@
     </insert>
 
     <insert id="saves">
-        <if test="list.size()>0">
-            insert into material(id,materialTypeId,chinese,english,spanish) values
-            <foreach collection="list" item="item" index="index" separator=",">
-                (null,#{item.materialType.id},#{item.chinese},#{item.english},#{item.spanish})
-            </foreach>
-        </if>
+        <choose>
+            <when test="list.size()>0">
+                insert into material(id,materialTypeId,chinese,english,spanish) values
+                <foreach collection="list" item="item" index="index" separator=",">
+                    (null,#{item.materialType.id},#{item.chinese},#{item.english},#{item.spanish})
+                </foreach>
+            </when>
+            <otherwise>
+                <!--执行一个空的b语句，否则如果是空的代码会报错-->
+                select 0
+            </otherwise>
+        </choose>
     </insert>
 
     <update id="update" parameterType="Material">

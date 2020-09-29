@@ -14,4 +14,11 @@ public interface MaterialEnglishHistoryDao extends IBaseDao<MaterialEnglishHisto
      * @return
      */
     int deleteByMaterial(int materialId);
+
+    /**
+     * 根据标志符集合批量将对应的提议改为审核不通过状态，长度如果为0则不进行任何处理
+     * @param ids id集合
+     * @return  删除的记录数，>=1表示删除成功，0表示删除失败
+     */
+    int updateOfAuditRefuse(java.io.Serializable[] ids);
 }

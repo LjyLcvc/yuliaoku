@@ -2,11 +2,15 @@ package com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.service;
 
 
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.dao.AdminDao;
+import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.dao.MaterialDao;
+import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.dao.MaterialEnglishHistoryDao;
+import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.dao.MaterialTypeDao;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.Admin;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.base.PageObject;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.exception.MyServiceException;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.exception.MyWebException;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.query.AdminQuery;
+import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.query.MaterialEnglishHistoryQuery;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.util.SHA;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,6 +30,12 @@ import java.util.Calendar;
 public class AdminService {
     @Autowired
     private AdminDao adminDao;
+    @Autowired
+    private MaterialTypeDao materialTypeDao;
+    @Autowired
+    private MaterialDao materialDao;
+    @Autowired
+    private MaterialEnglishHistoryDao materialEnglishHistoryDao;
 
     /**
      * 判断是否是超级管理员
@@ -113,8 +123,7 @@ public class AdminService {
      * 批量删除指定账户
      * 说明：
      * 1.不能自己删除自己
-     * 2.如果该账户参与过网站管理则不允许删除
-     * （1）发表、编辑过产品
+     * 2.如果该账户发表过物料提议，或是审核过物料提议，均不允许删除
      * 3.删除该账户的同时，移除相应的所有角色关系
      * @param adminOfOperator 执行删除的管理员账户
      * @param usernames 多个账户的主键集合
@@ -123,15 +132,24 @@ public class AdminService {
         //先进行验证
         if(usernames.length>0){//只有集合大于0才执行删除
             for(String username:usernames){
-                //Admin adminDelete=new Admin(username);
+                Admin admin=new Admin(username);
                 if(adminOfOperator.getUsername().equals(username)) {//如果登录账户的主键与被删除账户的主键一致
                     throw new MyServiceException("删除失败：不允许删除自己的账户");
                 }
-               /* adminDelete=adminDao.get(username);//获取被删除账户的数据库记录
-                if(!this.isSuperAdmin(admin)&&this.isSuperAdmin(adminDelete)){//如果被删除的账户是管理员，则必须要管理员才允许删除
-                    throw new MyServiceException("您没有删除管理员的权限");
-                }*/
-                //检查该用户是否有系统操作记录，如账户名，如果没有则不允许删除
+                //获取被删除账户是否有物料提议记录，如果有不允许删除
+                MaterialEnglishHistoryQuery materialEnglishHistoryQuery=new MaterialEnglishHistoryQuery();
+                materialEnglishHistoryQuery.setOperator(admin);
+                int numberOfOperator=materialEnglishHistoryDao.querySize(materialEnglishHistoryQuery);//获取要删除的记录
+                if(numberOfOperator>0){
+                    throw new MyServiceException("删除失败：账户"+username+"发布有"+numberOfOperator+"个提议");
+                }
+                //获取被删除账户是否有审核物料提议的记录，如果有不允许删除
+                materialEnglishHistoryQuery=new MaterialEnglishHistoryQuery();
+                materialEnglishHistoryQuery.setAuditor(admin);
+                int numberOfAudit=materialEnglishHistoryDao.querySize(materialEnglishHistoryQuery);//获取要删除的记录
+                if(numberOfAudit>0){
+                    throw new MyServiceException("删除失败：账户"+username+"审核过"+numberOfAudit+"个提议");
+                }
             }
             adminDao.deletes(usernames);
         }
@@ -214,13 +232,10 @@ public class AdminService {
      * 说明：
      * 1.账户名不能为空
      * 2.密码字段不修改
-     * @param adminOfOperator 操作的账户
+     * @param adminOfOperator 操作的账户，后期改为在过滤器统一验证
      * @param admin 被操作的账户
      */
     public void update(@NotNull Admin adminOfOperator,@Valid @NotNull Admin admin) {
-       /* if(!this.isSuperAdmin(adminOfOperator)){//如果不是超级管理员
-            throw new MyWebException("账户编辑失败：您没有管理权限");
-        }*/
         //前面必须经过spring验证框架的验证
         if (admin.getUsername() == null) {
             throw new MyWebException("账户编辑失败：账户名不能为空");
