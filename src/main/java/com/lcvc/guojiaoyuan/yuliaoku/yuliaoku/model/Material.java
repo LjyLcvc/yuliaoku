@@ -3,6 +3,7 @@ package com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * 物资名称
@@ -18,6 +19,9 @@ public class Material {
     private String english;//物料的英文名
     @Length(max = 200,message = "物资的西语长度不能超过 {max} ")
     private String spanish;//物料的西班牙语
+
+    //非数据库字段
+    private List<String> materialPhotos;//物料对应的图片集合
 
 
     public Material() {

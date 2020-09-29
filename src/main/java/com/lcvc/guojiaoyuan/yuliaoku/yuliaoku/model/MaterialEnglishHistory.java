@@ -5,7 +5,7 @@ import org.hibernate.validator.constraints.Length;
 import java.util.Date;
 
 /**
- * 用于保存物资的英文库操作记录
+ * 用于保存物资的英文词汇提议
  *
  */
 public class MaterialEnglishHistory {
@@ -14,7 +14,7 @@ public class MaterialEnglishHistory {
     private Admin operator;//操作此次记录的人
     @Length(min = 1, max = 200, message = "物资的英文长度必须在 {min} - {max} 之间")
     private String english;//修订的物料英文名
-    private Date createTime;//创建时间，该词条是否审核通过
+    private Date createTime;//创建时间
     private Boolean audit;//表示该表单是否审核通过,true表示通过，false表示不通过
     private Admin auditor;//审计此次记录的人，如果是管理员自己编辑的词条则直接默认是审计
     private Date auditTime;//审核的时间

@@ -23,7 +23,7 @@
 
    <insert id="save"  useGeneratedKeys="true" keyProperty="id">
           insert into material_english_history(id,materialId,operatorId,english,createTime,audit,auditorId,auditTime)
-          values(null,#{material.id},#{operator.id},#{english},now(),#{audit},#{auditor.id},#{auditTime})
+          values(null,#{material.id},#{operator.username},#{english},now(),#{audit},#{auditor.username},#{auditTime})
     </insert>
 
     <update id="update" parameterType="MaterialEnglishHistory">

@@ -9,6 +9,9 @@ import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.base.PageObject;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.exception.MyWebException;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.query.MaterialQuery;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.service.MaterialService;
+import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.util.file.IoFile;
+import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.util.file.MyFileOperator;
+import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.util.file.MyFileUpload;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.util.opi.material.MaterialWriteForExcel;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -17,7 +20,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashMap;
@@ -91,6 +96,56 @@ public class MaterialManageController {
         map.put(Constant.JSON_CODE, JsonCode.SUCCESS.getValue());
         return map;
     }
+
+
+    /**
+     * 上传物资对应的图片
+     * @param id 指定物料的关键字
+     * @param file 要上传的excel
+     */
+    @PostMapping("/manage/photo/{id}")
+    public Map<String, Object> uploadPicture(@PathVariable Integer id, MultipartFile file, HttpServletRequest request) throws Exception{
+        Map<String, Object> map=new HashMap<String, Object>();
+        map.put(Constant.JSON_CODE, JsonCode.ERROR.getValue());//默认失败
+        if(file!=null&&!file.isEmpty()){
+            String baseWebPath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+request.getContextPath()+"/";//获取项目根目录网址
+            Material material=materialService.get(id);//获取物料对象
+            if(material!=null){//如果该物料存在，则执行上传
+                //String basepath=ClassUtils.getDefaultClassLoader().getResource("").getPath();//获取项目的根目录(物理路径)，注意不能用JSP那套获取根目录，因为spring boot的tomcat为内置，每次都变
+                String basepath=uploadFolder;
+                String filePath=basepath+Constant.MATERIAL_PHOTO_UPLOAD_PATH;//获取图片上传后保存的物理路径
+                MyFileOperator.createDir(filePath);//创建存储目录
+                String fileName=file.getOriginalFilename();//获取文件名
+                String extensionName=MyFileOperator.getExtensionName(fileName);//获取文件扩展名
+                MyFileUpload.validateExtByDir(extensionName,null);// 验证上传图片后缀名是否符合网站要求
+                fileName= IoFile.gainFileNameOfNewOfUUID(extensionName);//获取按JAVA的UUID规则生成的新文件名
+                try {
+                    file.transferTo(new File(filePath+fileName));
+                    //将新的图片信息存入数据库
+                    map.put(Constant.JSON_CODE, JsonCode.SUCCESS.getValue());
+                    map.put(Constant.JSON_MESSAGE, "上传成功");
+                } catch (IOException e) {
+                    map.put(Constant.JSON_MESSAGE, "上传失败："+e.getMessage());
+                }
+            }
+        }else{
+            throw new MyWebException("操作失败：请选择上传文件");
+        }
+        return map;
+    }
+
+    /**
+     * 移除物资对应的图片
+     * @param id 指定物料图片的关键字
+     */
+    @DeleteMapping("/manage/photo/{id}")
+    public Map<String, Object> uploadPicture(@PathVariable Integer id) throws Exception{
+        Map<String, Object> map=new HashMap<String, Object>();
+        map.put(Constant.JSON_CODE, JsonCode.SUCCESS.getValue());
+        return map;
+    }
+
+
 
     /**
      * 上传物资表格，并导入到项目中

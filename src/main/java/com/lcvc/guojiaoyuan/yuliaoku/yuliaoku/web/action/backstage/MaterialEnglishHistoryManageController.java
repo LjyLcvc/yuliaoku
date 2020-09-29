@@ -5,6 +5,7 @@ import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.Admin;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.base.Constant;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.base.JsonCode;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.base.PageObject;
+import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.form.MaterialEnglishHistoryAddForm;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.query.MaterialEnglishHistoryQuery;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.service.MaterialEnglishHistoryService;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.service.MaterialService;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import javax.validation.constraints.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -54,15 +56,14 @@ public class MaterialEnglishHistoryManageController {
     }
 
     /**
-     * 添加物资操作记录
-     * @param materialId 物资id
-     * @param english 英文
+     * 添加物料提议
+     * @param materialEnglishHistoryAddForm
      */
     @PostMapping
-    public Map<String, Object> add(Integer materialId, String english, HttpSession session){
+    public Map<String, Object> add(@RequestBody @NotNull MaterialEnglishHistoryAddForm materialEnglishHistoryAddForm, HttpSession session){
         Map<String, Object> map=new HashMap<String, Object>();
         Admin admin=((Admin) session.getAttribute("admin"));
-        materialEnglishHistoryService.add(materialId,english,admin);
+        materialEnglishHistoryService.add(materialEnglishHistoryAddForm.getMaterialId(),materialEnglishHistoryAddForm.getEnglish(),admin);
         map.put(Constant.JSON_CODE, JsonCode.SUCCESS.getValue());
         return map;
     }
