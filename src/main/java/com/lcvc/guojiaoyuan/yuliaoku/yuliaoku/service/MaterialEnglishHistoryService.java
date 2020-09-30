@@ -102,13 +102,14 @@ public class MaterialEnglishHistoryService {
     public void updateOfAudit(@NotNull(message = "缺少主键") Integer materialEnglishHistoryId,@NotNull(message = "必须填写审核结果") Boolean audit,Admin auditor){
         MaterialEnglishHistory materialEnglishHistory=materialEnglishHistoryDao.get(materialEnglishHistoryId);//读取原来的记录
         if(materialEnglishHistory!=null){
-            if(auditor.isSuperAdmin()){//只有管理员能够审核
+            if(!auditor.isSuperAdmin()){//只有管理员能够审核
                 throw new MyWebException("操作失败：必须是管理员才能审核");
-            }
-            if(materialEnglishHistory.getAudit()!=null){
+            }else if(materialEnglishHistory.getAudit()!=null){
                 throw new MyServiceException("操作失败：已经审核过的提议不能再次审核");
             }else{
+                materialEnglishHistory.setAuditor(auditor);//赋值审核管理员
                 materialEnglishHistory.setAudit(audit);//赋值审核状态
+                materialEnglishHistory.setAuditTime(Calendar.getInstance().getTime());//赋予审核时间
                 if(materialEnglishHistory.getAudit()==true){//如果是true，则更改词库的记录
                     Material material=materialDao.get(materialEnglishHistory.getMaterial().getId());//获取原有记录
                     material.setEnglish(materialEnglishHistory.getEnglish());//设置为英文
@@ -143,7 +144,7 @@ public class MaterialEnglishHistoryService {
                     }
                 }
             }
-            materialEnglishHistoryDao.updateOfAuditRefuse(ids);
+            materialEnglishHistoryDao.updateOfAuditRefuse(ids,auditor.getUsername(),Calendar.getInstance().getTime());
         }
     }
 

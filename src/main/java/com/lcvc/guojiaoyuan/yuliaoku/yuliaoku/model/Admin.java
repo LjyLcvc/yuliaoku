@@ -88,7 +88,7 @@ public class Admin implements java.io.Serializable{
      */
     public boolean isSuperAdmin(){
         boolean judge=false;//默认不是
-        if(role==1){
+        if(this.role==1){
             judge=true;
         }
         return judge;

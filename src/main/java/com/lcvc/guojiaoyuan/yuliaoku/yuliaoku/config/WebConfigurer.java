@@ -38,6 +38,7 @@ public class WebConfigurer implements WebMvcConfigurer {
                 .addPathPatterns("/api/backstage/admin/manage/**")//要拦截的路径
                 .addPathPatterns("/api/backstage/materialtype/manage/**")//要拦截的路径
                 .addPathPatterns("/api/backstage/material/manage/**")//要拦截的路径
+                .addPathPatterns("/api/backstage/materialenglishhistory/manage/**")//要拦截的路径
                 .excludePathPatterns(new LinkedList<String>(){{//不拦截的路径（一般指addPathPatterns中包含，但是不进行拦截的特例）
                     add("/api/backstage/materialmanage/query");
                 }});

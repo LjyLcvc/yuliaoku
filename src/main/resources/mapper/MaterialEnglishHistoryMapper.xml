@@ -33,6 +33,8 @@
             <if test="material!=null and material.id!=null">materialId=#{material.id},</if>
             <if test="english!=null and english.length()>0">english=#{english},</if>
             <if test="audit!=null">audit=#{audit},</if>
+            <if test="auditor!=null and auditor.username!=null">auditorId=#{auditor.username},</if>
+            <if test="auditTime!=null">auditTime=#{auditTime},</if>
         </set>
         where id=#{id}
     </update>
@@ -115,10 +117,10 @@
     </delete>
 
     <update id="updateOfAuditRefuse" >
-        update material_english_history set audit=false where 1=0
-        <if test="array != null and array.length> 0">
+        update material_english_history set audit=false,auditorId=#{auditorId},auditTime=#{auditTime} where 1=0
+        <if test="ids != null and ids.length> 0">
             OR id in
-            <foreach item="item" collection="array" open="(" separator="," close=")">
+            <foreach item="item" collection="ids" open="(" separator="," close=")">
                 #{item}
             </foreach>
         </if>
