@@ -48,7 +48,7 @@ logging:
     com.jhxx.schoolroll: error
     org.springframework: error
   file:
-    name: target/log/yuliaoku.log
+    name: c:/yuliaoku/log/yuliaoku.log
 myFile: #自定义变量
   #文件上传目录（注意Linux和Windows上的目录结构不同）
   uploadFolder: c:/yuliaoku/upload/
