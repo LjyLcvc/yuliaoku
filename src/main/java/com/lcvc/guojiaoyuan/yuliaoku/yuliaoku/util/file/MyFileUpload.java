@@ -34,7 +34,7 @@ public class MyFileUpload {
 	 * 检查dirName是否是允许的格式，如果为null则默认为image
 	 * 根据dirName，判断后缀名是否是dirName允许的格式
 	 * @param ext 后缀名 如jpg，txt
-	 * @param dirName 目录名  如image,file。
+	 * @param dirName 目录名  如image,file。null则默认是image
 	 * @return true表示允许
 	 * @Throws MyFormPropertyException 检查从web层传递过来的值是否合法
 	 */
@@ -49,7 +49,7 @@ public class MyFileUpload {
 			String[] exts = extMap.get(dirName).split(",");
 			List<String> extList = Arrays.<String> asList(exts);// 将数组转换为list
 			if (!extList.contains(ext)) {// 如果允许扩展名中不包含上传文件的扩展名
-				throw new MyWebException("上传文件扩展名是不允许的扩展名。\n只允许" + extMap.get(dirName) + "格式。");
+				throw new MyWebException("上传文件扩展名"+ext+"是不允许的扩展名。\n只允许" + extMap.get(dirName) + "格式。");
 			}else{//如果后缀名符合网站要求
 				judge=true;
 			}

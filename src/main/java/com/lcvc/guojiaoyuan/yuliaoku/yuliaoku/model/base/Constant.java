@@ -27,5 +27,9 @@ public class Constant {
     //excel上传配置
     public static final String MATERIAL_EXCEL_UPLOAD_PATH= "material/excel/";//用于在物料Excel上传的时候，在项目配置的默认上传路径（如:upload）下的相对路径
 
-    public static final String MATERIAL_PHOTO_UPLOAD_PATH= "material/photo/";//用于在物料图片上传的时候，在项目配置的默认上传路径（如:upload）下的相对路径
+    /**
+     * 物料图片上传设置
+     */
+    public static Integer MATERIAL_PHOTO_UPLOAD_NUMBER=3;//上传图片的限定
+    public static final String MATERIAL_PHOTO_UPLOAD_PATH="material/photo/";//用于在物料图片上传的时候，在项目配置的默认上传路径（如:upload）下的相对路径
 }

@@ -6,12 +6,16 @@ import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.dao.MaterialDao;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.dao.MaterialEnglishHistoryDao;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.dao.MaterialTypeDao;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.Material;
+import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.MaterialPhoto;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.MaterialType;
+import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.base.Constant;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.base.PageObject;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.exception.MyServiceException;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.query.MaterialQuery;
+import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.util.file.MyFileOperator;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.util.opi.material.MaterialReadFromExcel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -19,8 +23,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +36,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Validated//表示开启sprint的校检框架，会自动扫描方法里的@Valid（@Valid注解一般写在接口即可）
 @Service
 public class MaterialService {
+    @Value("${myFile.uploadFolder}")
+    private String uploadFolder;//注入系统默认的上传路径
     @Autowired
     private AdminDao adminDao;
     @Autowired
@@ -47,7 +55,12 @@ public class MaterialService {
      */
     public PageObject query(Integer page, Integer limit, MaterialQuery materialQuery){
         PageObject pageObject = new PageObject(limit,page,materialDao.querySize(materialQuery));
-        pageObject.setList(materialDao.query(pageObject.getOffset(),pageObject.getLimit(),materialQuery));
+        List<Material> materials=materialDao.query(pageObject.getOffset(),pageObject.getLimit(),materialQuery);
+        pageObject.setList(materials);
+        for(Material material:materials){
+            //获取物料对应的图片集合
+            material.setMaterialPhotos(materialDao.getMaterialPhotos(material.getId()));
+        }
         return pageObject;
     }
 
@@ -65,16 +78,33 @@ public class MaterialService {
      * 批量删除指定记录
      * 说明：
      * 1.如果该物资下有操作记录，则一起删除
+     * 2.如果该物料有图片，则将数据库记录和相应的图片一起删除
      * @param ids 多个记录的主键集合
      */
     public void deletes(Integer[] ids){
         //先进行验证
         if(ids.length>0){//只有集合大于0才执行删除
+            List<MaterialPhoto> materialPhotos=new ArrayList<MaterialPhoto>();//获取物料图片集合，用于后续批量删除
             for(Integer id:ids){
-                //检查该物资下是否有操作记录，如果有则删除所有操作记录
+                /**
+                 * 检查该物资下是否有操作记录，如果有则删除所有操作记录
+                 */
                 materialEnglishHistoryDao.deleteByMaterial(id);
+                /**
+                 * 检查该物资是否有图片，如果有则删除所有图片
+                 */
+                materialPhotos.addAll(materialDao.getMaterialPhotos(id)); //获取物料对应的图片集合
+                //先删除数据库中的记录（因为有事务），后面再删除图片
+                materialDao.deleteMaterialPhotosByMaterial(id);
             }
-            materialDao.deletes(ids);
+            materialDao.deletes(ids);//删除物料集合
+            /**
+             * 删除物料对应的所有图片
+             */
+            String fileUploadPath=uploadFolder+Constant.MATERIAL_PHOTO_UPLOAD_PATH;//获取图片上传后保存的完整物理路径
+            for(MaterialPhoto materialPhoto:materialPhotos){//最后删除图片
+                MyFileOperator.deleteFile(fileUploadPath+materialPhoto.getPicUrl());//删除文件
+            }
         }
     }
 
@@ -88,6 +118,52 @@ public class MaterialService {
     public void add(@Valid @NotNull(message = "表单没有传值到服务端") Material material){
         //前面必须经过spring验证框架的验证
         materialDao.save(material);
+    }
+
+    /**
+     *
+     * 添加物料照片的集合
+     * 说明：
+     * 1.名称和排序属性均不能为空
+     * @param materialId
+     * @param fileNames 文件名集合
+     */
+    public void addMaterialPhotos(@Valid @NotNull(message = "必须选择要对应的物料") Integer materialId,@NotEmpty List<String> fileNames){
+        //前面必须经过spring验证框架的验证
+        if(fileNames.size()>Constant.MATERIAL_PHOTO_UPLOAD_NUMBER){
+            throw new MyServiceException("操作失败：上传的图片数量不能超过"+Constant.MATERIAL_PHOTO_UPLOAD_NUMBER+"张");
+        }
+        int numberOrigin=materialDao.getMaterialPhotosNumber(materialId);//获取该物料在数据库原有的图片数量
+        if(numberOrigin+fileNames.size()>Constant.MATERIAL_PHOTO_UPLOAD_NUMBER){
+            throw new MyServiceException("操作失败：该物料已经拥有"+numberOrigin+"张图片，每个物料能拥有的图片数量不能超过"+Constant.MATERIAL_PHOTO_UPLOAD_NUMBER+"张");
+        }
+        materialDao.saveMaterialPhotos(materialId,fileNames);
+    }
+
+    /**
+     * 批量删除指定的照片集合
+     * 说明：连同图片文件一起删除
+     * @param ids 多个记录的主键集合
+     */
+    public void deleteMaterialPhotos(@NotEmpty(message = "请选择要删除的图片")Integer[] ids){
+        //先进行验证
+        if(ids.length>0){//只有集合大于0才执行删除
+            List<MaterialPhoto> materialPhotos=new ArrayList<MaterialPhoto>();//获取物料图片集合，用于后续批量删除
+            for(Integer id:ids){
+                MaterialPhoto materialPhoto=materialDao.getMaterialPhoto(id);//获取对应的图片对象
+                if(materialPhoto!=null){//如果记录存在
+                    materialPhotos.add(materialDao.getMaterialPhoto(id));
+                }
+            }
+            materialDao.deleteMaterialPhotos(ids);//删除物料图片集合
+            /**
+             * 删除物料对应的所有图片
+             */
+            String fileUploadPath=uploadFolder+Constant.MATERIAL_PHOTO_UPLOAD_PATH;//获取图片上传后保存的完整物理路径
+            for(MaterialPhoto materialPhoto:materialPhotos){//最后删除图片
+                MyFileOperator.deleteFile(fileUploadPath+materialPhoto.getPicUrl());//删除文件
+            }
+        }
     }
 
 

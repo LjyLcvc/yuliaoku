@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -74,7 +75,7 @@ public class MaterialManageController {
     /*============================下面设计是只有管理员才能操作=================================*/
 
     /**
-     * 批量删除物资记录
+     * 批量删除物资记录，并删除对应的图片
      * @param ids 物资记录的标志符集合，前端传递格式：1,2,3
      */
     @DeleteMapping("/manage/{ids}")
@@ -100,32 +101,52 @@ public class MaterialManageController {
 
     /**
      * 上传物资对应的图片
+     * 1.如果上传失败，则删除已经上传成功的其他图片
      * @param id 指定物料的关键字
-     * @param file 要上传的excel
+     * @param files 要上传的图片集合，如果没有图片则弹出异常
      */
     @PostMapping("/manage/photo/{id}")
-    public Map<String, Object> uploadPicture(@PathVariable Integer id, MultipartFile file, HttpServletRequest request) throws Exception{
+    public Map<String, Object> uploadPicture(@PathVariable Integer id, MultipartFile[] files, HttpServletRequest request) throws Exception{
         Map<String, Object> map=new HashMap<String, Object>();
-        map.put(Constant.JSON_CODE, JsonCode.ERROR.getValue());//默认失败
-        if(file!=null&&!file.isEmpty()){
-            String baseWebPath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+request.getContextPath()+"/";//获取项目根目录网址
-            Material material=materialService.get(id);//获取物料对象
-            if(material!=null){//如果该物料存在，则执行上传
-                //String basepath=ClassUtils.getDefaultClassLoader().getResource("").getPath();//获取项目的根目录(物理路径)，注意不能用JSP那套获取根目录，因为spring boot的tomcat为内置，每次都变
-                String basepath=uploadFolder;
-                String filePath=basepath+Constant.MATERIAL_PHOTO_UPLOAD_PATH;//获取图片上传后保存的物理路径
-                MyFileOperator.createDir(filePath);//创建存储目录
-                String fileName=file.getOriginalFilename();//获取文件名
-                String extensionName=MyFileOperator.getExtensionName(fileName);//获取文件扩展名
-                MyFileUpload.validateExtByDir(extensionName,null);// 验证上传图片后缀名是否符合网站要求
-                fileName= IoFile.gainFileNameOfNewOfUUID(extensionName);//获取按JAVA的UUID规则生成的新文件名
-                try {
-                    file.transferTo(new File(filePath+fileName));
+        map.put(Constant.JSON_CODE, JsonCode.SUCCESS.getValue());//默认成功
+        List<String> fileNames=new ArrayList<String>();//获取成功上传的图片文件名（实际上传到服务器后的文件名）
+        if(files!=null&&files.length>0){
+            String basePath=uploadFolder;//注入系统默认的上传路径:例如保存在服务器C盘
+            String fileUploadPath=basePath+Constant.MATERIAL_PHOTO_UPLOAD_PATH;//获取图片上传后保存的完整物理路径
+            for(MultipartFile file:files){//遍历上传的图片
+                Material material=materialService.get(id);//获取物料对象
+                if(material!=null){//如果该物料存在，则执行上传
+                    MyFileOperator.createDir(fileUploadPath);//创建存储目录
+                    String fileName=file.getOriginalFilename();//获取文件名
+                    String extensionName=MyFileOperator.getExtensionName(fileName);//获取文件扩展名
+                    try {
+                        MyFileUpload.validateExtByDir(extensionName,null);// 验证上传图片后缀名是否符合网站要求
+                        fileName= IoFile.gainFileNameOfNewOfUUID(extensionName);//获取按JAVA的UUID规则生成的新文件名
+                        file.transferTo(new File(fileUploadPath+fileName));
+                        fileNames.add(fileName);//将文件名称存入
+                    } catch (Exception e) {
+                        map.put(Constant.JSON_MESSAGE, "上传失败："+e.getMessage());
+                        map.put(Constant.JSON_CODE, JsonCode.ERROR.getValue());//失败状态码
+                    }
+                }
+            }
+            if(map.get(Constant.JSON_CODE)==JsonCode.SUCCESS.getValue()) {//如果图片保存成功
+                try{
                     //将新的图片信息存入数据库
-                    map.put(Constant.JSON_CODE, JsonCode.SUCCESS.getValue());
-                    map.put(Constant.JSON_MESSAGE, "上传成功");
-                } catch (IOException e) {
+                    materialService.addMaterialPhotos(id,fileNames);
+                }catch (Exception e) {
                     map.put(Constant.JSON_MESSAGE, "上传失败："+e.getMessage());
+                    map.put(Constant.JSON_CODE, JsonCode.ERROR.getValue());//失败状态码
+                }
+            }
+            //如果图片上传和数据库保存均成功，只要有一个失败就删除上传的图片
+            if(map.get(Constant.JSON_CODE)==JsonCode.SUCCESS.getValue()){//如果保存成功
+                map.put(Constant.JSON_MESSAGE, "上传成功上传"+fileNames.size()+"张图片");
+            }else{//如果保存失败
+                //删除已经上传的文件
+                for(String fileName:fileNames){//遍历上传成功的图片
+                    String filePath=fileUploadPath+fileName;//获取图片完整路径
+                    MyFileOperator.deleteFile(filePath);//删除文件
                 }
             }
         }else{
@@ -136,12 +157,13 @@ public class MaterialManageController {
 
     /**
      * 移除物资对应的图片
-     * @param id 指定物料图片的关键字
+     * @param ids 指定物料图片的关键字集合
      */
-    @DeleteMapping("/manage/photo/{id}")
-    public Map<String, Object> uploadPicture(@PathVariable Integer id) throws Exception{
+    @DeleteMapping("/manage/photo/{ids}")
+    public Map<String, Object> removePicture(@PathVariable Integer[] ids) throws Exception{
         Map<String, Object> map=new HashMap<String, Object>();
         map.put(Constant.JSON_CODE, JsonCode.SUCCESS.getValue());
+        materialService.deleteMaterialPhotos(ids);
         return map;
     }
 

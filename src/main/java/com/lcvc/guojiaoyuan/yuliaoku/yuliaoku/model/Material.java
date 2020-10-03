@@ -21,7 +21,7 @@ public class Material {
     private String spanish;//物料的西班牙语
 
     //非数据库字段
-    private List<String> materialPhotos;//物料对应的图片集合
+    private List<MaterialPhoto> materialPhotos;//物料对应的图片集合
 
 
     public Material() {
@@ -69,5 +69,13 @@ public class Material {
 
     public void setSpanish(String spanish) {
         this.spanish = spanish;
+    }
+
+    public List<MaterialPhoto> getMaterialPhotos() {
+        return materialPhotos;
+    }
+
+    public void setMaterialPhotos(List<MaterialPhoto> materialPhotos) {
+        this.materialPhotos = materialPhotos;
     }
 }

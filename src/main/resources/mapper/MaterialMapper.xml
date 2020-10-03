@@ -117,4 +117,50 @@
         </if>
     </sql>
 
+
+
+    <!--==================================定制查询============================-->
+
+    <select id="getMaterialPhoto"  resultType="MaterialPhoto">
+        select * from material_photo where id=#{id}
+    </select>
+
+    <insert id="saveMaterialPhotos">
+        <choose>
+            <when test="fileNames.size()>0">
+                insert into material_photo(id,meterialId,picUrl,createTime) values
+                <foreach collection="fileNames" item="item" index="index" separator=",">
+                    (null,#{meterialId},#{item},now())
+                </foreach>
+            </when>
+            <otherwise>
+                <!--执行一个空的b语句，否则如果是空的代码会报错-->
+                select 0
+            </otherwise>
+        </choose>
+    </insert>
+
+
+    <select id="getMaterialPhotosNumber"  resultType="Integer">
+        select count(1) from material_photo where meterialId=#{meterialId}
+    </select>
+
+    <select id="getMaterialPhotos"  resultType="MaterialPhoto">
+        select * from material_photo where meterialId=#{meterialId}
+    </select>
+
+    <delete id="deleteMaterialPhotosByMaterial">
+        delete from material_photo where meterialId=#{meterialId}
+    </delete>
+
+    <delete id="deleteMaterialPhotos" >
+        delete from material_photo where 1=0
+        <if test="array != null and array.length> 0">
+            OR id in
+            <foreach item="item" collection="array" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </delete>
+
 </mapper>
