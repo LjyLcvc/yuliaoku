@@ -49,10 +49,11 @@ public class MaterialManageController {
      * @param materialQuery 查询条件
      */
     @GetMapping("/query")
-    public Map<String, Object> manage(Integer page, Integer limit, MaterialQuery materialQuery){
+    public Map<String, Object> manage(Integer page, Integer limit, MaterialQuery materialQuery,HttpServletRequest request){
         Map<String, Object> map=new HashMap<String, Object>();
         map.put(Constant.JSON_CODE, JsonCode.SUCCESS.getValue());
-        PageObject pageObject =materialService.query(page,limit,materialQuery);
+        String baseUrl = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+request.getContextPath()+"/";//获取项目根目录网址
+        PageObject pageObject =materialService.query(page,limit,materialQuery,baseUrl);
         map.put(Constant.JSON_TOTAL,pageObject.getTotalRecords());
         map.put(Constant.JSON_DATA,pageObject.getList());
         return map;
@@ -64,10 +65,11 @@ public class MaterialManageController {
      * @return
      */
     @GetMapping("/{id}")
-    public Map<String, Object>  getMaterialType(@PathVariable Integer id){
+    public Map<String, Object>  get(@PathVariable Integer id,HttpServletRequest request){
         Map<String, Object> map=new HashMap<String, Object>();
         map.put(Constant.JSON_CODE, JsonCode.SUCCESS.getValue());
-        map.put(Constant.JSON_DATA,materialService.get(id));
+        String baseUrl = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+request.getContextPath()+"/";//获取项目根目录网址
+        map.put(Constant.JSON_DATA,materialService.get(id,baseUrl));
         return map;
     }
 
@@ -104,6 +106,7 @@ public class MaterialManageController {
      * 1.如果上传失败，则删除已经上传成功的其他图片
      * @param id 指定物料的关键字
      * @param files 要上传的图片集合，如果没有图片则弹出异常
+     * @return data里面会有回显的图片网址
      */
     @PostMapping("/manage/photo/{id}")
     public Map<String, Object> uploadPicture(@PathVariable Integer id, MultipartFile[] files, HttpServletRequest request) throws Exception{
@@ -111,17 +114,18 @@ public class MaterialManageController {
         map.put(Constant.JSON_CODE, JsonCode.SUCCESS.getValue());//默认成功
         List<String> fileNames=new ArrayList<String>();//获取成功上传的图片文件名（实际上传到服务器后的文件名）
         if(files!=null&&files.length>0){
+            String baseUrl = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+request.getContextPath()+"/";//获取项目根目录网址
             String basePath=uploadFolder;//注入系统默认的上传路径:例如保存在服务器C盘
             String fileUploadPath=basePath+Constant.MATERIAL_PHOTO_UPLOAD_PATH;//获取图片上传后保存的完整物理路径
             for(MultipartFile file:files){//遍历上传的图片
-                Material material=materialService.get(id);//获取物料对象
+                Material material=materialService.get(id,baseUrl);//获取物料对象
                 if(material!=null){//如果该物料存在，则执行上传
                     MyFileOperator.createDir(fileUploadPath);//创建存储目录
                     String fileName=file.getOriginalFilename();//获取文件名
                     String extensionName=MyFileOperator.getExtensionName(fileName);//获取文件扩展名
                     try {
                         MyFileUpload.validateExtByDir(extensionName,null);// 验证上传图片后缀名是否符合网站要求
-                        fileName= IoFile.gainFileNameOfNewOfUUID(extensionName);//获取按JAVA的UUID规则生成的新文件名
+                        fileName= material.getId()+"_"+IoFile.gainFileNameOfNewOfUUID(extensionName);//获取按JAVA的UUID规则生成的新文件名
                         file.transferTo(new File(fileUploadPath+fileName));
                         fileNames.add(fileName);//将文件名称存入
                     } catch (Exception e) {
@@ -142,6 +146,11 @@ public class MaterialManageController {
             //如果图片上传和数据库保存均成功，只要有一个失败就删除上传的图片
             if(map.get(Constant.JSON_CODE)==JsonCode.SUCCESS.getValue()){//如果保存成功
                 map.put(Constant.JSON_MESSAGE, "上传成功上传"+fileNames.size()+"张图片");
+                List<String> picUrls=new ArrayList<String>();
+                for(String fileName:fileNames){//遍历上传成功的图片
+                    picUrls.add(materialService.getPictureUrl(baseUrl,fileName));
+                }
+                map.put(Constant.JSON_DATA, picUrls);//将上传成功后的图片地址返回
             }else{//如果保存失败
                 //删除已经上传的文件
                 for(String fileName:fileNames){//遍历上传成功的图片

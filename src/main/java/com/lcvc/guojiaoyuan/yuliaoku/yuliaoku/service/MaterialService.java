@@ -48,18 +48,46 @@ public class MaterialService {
     private MaterialEnglishHistoryDao materialEnglishHistoryDao;
 
     /**
+     * 获取图片上传到服务器后的完整物理路径，可用于文件的操作，如删除
+     * @param filename 图片的文件名
+     * @return
+     */
+    public String getPicturePath(String filename){
+        String fileUploadPath=uploadFolder+Constant.MATERIAL_PHOTO_UPLOAD_PATH;//获取图片上传后保存的完整物理路径
+        return fileUploadPath+filename;
+    }
+
+    /**
+     * 获取图片上传到服务器后的完整网址，用于图片的显示
+     * @param filename 图片的文件名
+     * @param baseUrl 项目根目录网址，用于图片地址处理
+     * @return
+     */
+    public String getPictureUrl(String baseUrl,String filename){
+        return baseUrl+Constant.MATERIAL_PHOTO_UPLOAD_URL+filename;
+    }
+
+    /**
      * 分页查询记录
      * @param page 当前页面
      * @param limit  每页最多显示的记录数
      * @param materialQuery 查询条件类
+     * @param baseUrl 项目根目录网址，用于图片地址处理
      */
-    public PageObject query(Integer page, Integer limit, MaterialQuery materialQuery){
+    public PageObject query(Integer page, Integer limit, MaterialQuery materialQuery,String baseUrl){
         PageObject pageObject = new PageObject(limit,page,materialDao.querySize(materialQuery));
         List<Material> materials=materialDao.query(pageObject.getOffset(),pageObject.getLimit(),materialQuery);
         pageObject.setList(materials);
         for(Material material:materials){
-            //获取物料对应的图片集合
-            material.setMaterialPhotos(materialDao.getMaterialPhotos(material.getId()));
+            /**
+             *  获取物料对应的图片集合
+             */
+            List<MaterialPhoto> materialPhotos=materialDao.getMaterialPhotos(material.getId());//获取数据库里的数据集合
+            //设置图片的网址
+           for(MaterialPhoto materialPhoto:materialPhotos){
+                materialPhoto.setPicUrl(getPictureUrl(baseUrl,materialPhoto.getPicUrl()));
+            }
+            material.setMaterialPhotos(materialPhotos);
         }
         return pageObject;
     }
@@ -67,9 +95,23 @@ public class MaterialService {
     /**
      * 根据标志符读取指定记录
      * @param id
+     * @param baseUrl 项目根目录网址，用于图片地址处理
      * @return
      */
-    public Material get(@NotNull Integer id) {
+    public Material get(@NotNull Integer id,String baseUrl) {
+        Material material=materialDao.get(id);
+        if(material!=null){
+            /**
+             *  获取物料对应的图片集合
+             */
+            List<MaterialPhoto> materialPhotos=materialDao.getMaterialPhotos(material.getId());//获取数据库里的数据集合
+            //设置图片的网址
+            for(MaterialPhoto materialPhoto:materialPhotos){
+                materialPhoto.setPicUrl(getPictureUrl(baseUrl,materialPhoto.getPicUrl()));
+            }
+            material.setMaterialPhotos(materialPhotos);
+        }
+
         return materialDao.get(id);
     }
 
@@ -101,9 +143,8 @@ public class MaterialService {
             /**
              * 删除物料对应的所有图片
              */
-            String fileUploadPath=uploadFolder+Constant.MATERIAL_PHOTO_UPLOAD_PATH;//获取图片上传后保存的完整物理路径
             for(MaterialPhoto materialPhoto:materialPhotos){//最后删除图片
-                MyFileOperator.deleteFile(fileUploadPath+materialPhoto.getPicUrl());//删除文件
+                MyFileOperator.deleteFile(getPicturePath(materialPhoto.getPicUrl()));//删除文件
             }
         }
     }

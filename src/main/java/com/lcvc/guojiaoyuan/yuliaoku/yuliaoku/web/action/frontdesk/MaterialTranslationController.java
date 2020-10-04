@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.NotBlank;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,6 +24,15 @@ public class MaterialTranslationController {
     private MaterialService materialService;
 
     /**
+     * 获取项目根目录的绝对网址
+     * @param request
+     * @return
+     */
+    private String getBaseUrl(HttpServletRequest request){
+        return request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+request.getContextPath()+"/";//获取项目根目录网址
+    }
+
+    /**
      * 中译英
      * @param page
      * @param limit
@@ -30,11 +40,11 @@ public class MaterialTranslationController {
      * @return
      */
     @GetMapping(value = "/chineseToEngLish")
-    public Map<String, Object> chineseToEngLish( Integer page, Integer limit,@NotBlank(message = "必须输入中文")String chinese){
+    public Map<String, Object> chineseToEngLish(Integer page, Integer limit, @NotBlank(message = "必须输入中文")String chinese, HttpServletRequest request){
         Map<String, Object> map=new HashMap<String, Object>();
         MaterialQuery materialQuery=new MaterialQuery();//创建查询条件
         materialQuery.setChinese(chinese);
-        PageObject pageObject =materialService.query(page,limit,materialQuery);
+        PageObject pageObject =materialService.query(page,limit,materialQuery,getBaseUrl(request));
         map.put(Constant.JSON_TOTAL,pageObject.getTotalRecords());
         map.put(Constant.JSON_DATA,pageObject.getList());
         return map;
@@ -49,11 +59,11 @@ public class MaterialTranslationController {
      * @return
      */
     @GetMapping(value = "/engLishToChinese")
-    public Map<String, Object> engLishToChinese(Integer page, Integer limit,@NotBlank(message = "必须输入英文")String english){
+    public Map<String, Object> engLishToChinese(Integer page, Integer limit,@NotBlank(message = "必须输入英文")String english,HttpServletRequest request){
         Map<String, Object> map=new HashMap<String, Object>();
         MaterialQuery materialQuery=new MaterialQuery();//创建查询条件
         materialQuery.setEnglish(english);
-        PageObject pageObject =materialService.query(page,limit,materialQuery);
+        PageObject pageObject =materialService.query(page,limit,materialQuery,getBaseUrl(request));
         map.put(Constant.JSON_TOTAL,pageObject.getTotalRecords());
         map.put(Constant.JSON_DATA,pageObject.getList());
         return map;
