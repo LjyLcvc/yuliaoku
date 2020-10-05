@@ -11,6 +11,7 @@ import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.MaterialType;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.base.Constant;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.base.PageObject;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.exception.MyServiceException;
+import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.query.MaterialEnglishHistoryQuery;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.query.MaterialQuery;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.util.file.MyFileOperator;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.util.opi.material.MaterialReadFromExcel;
@@ -68,6 +69,29 @@ public class MaterialService {
     }
 
     /**
+     * 设置物料的关联属性
+     * @param material 必须有数据库该表的完整字段
+     * @param baseUrl 项目根目录网址，用于图片地址处理
+     */
+    private void setMaterialParam(Material material,String baseUrl){
+        /**
+         * 获取物料对应的提议数量
+         */
+        MaterialEnglishHistoryQuery materialEnglishHistoryQuery=new MaterialEnglishHistoryQuery();
+        materialEnglishHistoryQuery.setMaterial(material);
+        material.setMaterialEnglishHistoryNumber(materialEnglishHistoryDao.querySize(materialEnglishHistoryQuery));
+        /**
+         *  获取物料对应的图片集合
+         */
+        List<MaterialPhoto> materialPhotos=materialDao.getMaterialPhotos(material.getId());//获取数据库里的数据集合
+        //设置图片的网址
+        for(MaterialPhoto materialPhoto:materialPhotos){
+            materialPhoto.setPicUrl(getPictureUrl(baseUrl,materialPhoto.getPicUrl()));
+        }
+        material.setMaterialPhotos(materialPhotos);
+    }
+
+    /**
      * 分页查询记录
      * @param page 当前页面
      * @param limit  每页最多显示的记录数
@@ -79,15 +103,7 @@ public class MaterialService {
         List<Material> materials=materialDao.query(pageObject.getOffset(),pageObject.getLimit(),materialQuery);
         pageObject.setList(materials);
         for(Material material:materials){
-            /**
-             *  获取物料对应的图片集合
-             */
-            List<MaterialPhoto> materialPhotos=materialDao.getMaterialPhotos(material.getId());//获取数据库里的数据集合
-            //设置图片的网址
-           for(MaterialPhoto materialPhoto:materialPhotos){
-                materialPhoto.setPicUrl(getPictureUrl(baseUrl,materialPhoto.getPicUrl()));
-            }
-            material.setMaterialPhotos(materialPhotos);
+            this.setMaterialParam(material,baseUrl);//设置关联属性
         }
         return pageObject;
     }
@@ -101,15 +117,7 @@ public class MaterialService {
     public Material get(@NotNull Integer id,String baseUrl) {
         Material material=materialDao.get(id);
         if(material!=null){
-            /**
-             *  获取物料对应的图片集合
-             */
-            List<MaterialPhoto> materialPhotos=materialDao.getMaterialPhotos(material.getId());//获取数据库里的数据集合
-            //设置图片的网址
-            for(MaterialPhoto materialPhoto:materialPhotos){
-                materialPhoto.setPicUrl(getPictureUrl(baseUrl,materialPhoto.getPicUrl()));
-            }
-            material.setMaterialPhotos(materialPhotos);
+            this.setMaterialParam(material,baseUrl);//设置关联属性
         }
 
         return materialDao.get(id);

@@ -22,6 +22,7 @@ public class Material {
 
     //非数据库字段
     private List<MaterialPhoto> materialPhotos;//物料对应的图片集合
+    private Integer materialEnglishHistoryNumber;//物料对应的提议数量
 
 
     public Material() {
@@ -78,4 +79,14 @@ public class Material {
     public void setMaterialPhotos(List<MaterialPhoto> materialPhotos) {
         this.materialPhotos = materialPhotos;
     }
+
+    public Integer getMaterialEnglishHistoryNumber() {
+        return materialEnglishHistoryNumber;
+    }
+
+    public void setMaterialEnglishHistoryNumber(Integer materialEnglishHistoryNumber) {
+        this.materialEnglishHistoryNumber = materialEnglishHistoryNumber;
+    }
+
+
 }
