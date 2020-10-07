@@ -46,6 +46,7 @@
         update material
         <!-- 使用set标签可以将动态的配置SET 关键字，和剔除追加到条件末尾的任何不相关的逗号。 -->
         <set>
+            <if test="materialType!=null and materialType.id!=null">materialTypeId=#{materialType.id},</if>
             <if test="chinese!=null and chinese.length()>0">chinese=#{chinese},</if>
             <if test="english!=null and english.length()>0">english=#{english},</if>
             <if test="spanish!=null and spanish.length()>0">spanish=#{spanish},</if>

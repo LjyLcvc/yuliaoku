@@ -171,6 +171,25 @@ public class MaterialService {
 
     /**
      *
+     * 编辑记录
+     * 说明：
+     * 1.物料标志符不能为空
+     * 2.只能修改所属物料类别和物料中文名
+     * @param material
+     */
+    public void update(@Valid @NotNull(message = "表单没有传值到服务端") Material material){
+        //前面必须经过spring验证框架的验证
+        if(material.getId()==null){
+            throw new MyServiceException("操作失败：物料标志符不能为空");
+        }
+        //下述字段不允许修改
+        material.setEnglish(null);
+        material.setSpanish(null);
+        materialDao.update(material);
+    }
+
+    /**
+     *
      * 添加物料照片的集合
      * 说明：
      * 1.名称和排序属性均不能为空

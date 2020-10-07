@@ -100,6 +100,17 @@ public class MaterialManageController {
         return map;
     }
 
+    /**
+     * 编辑物资
+     * @param material
+     */
+    @PutMapping("/manage")
+    public Map<String, Object> update(@RequestBody Material material){
+        Map<String, Object> map=new HashMap<String, Object>();
+        materialService.update(material);
+        map.put(Constant.JSON_CODE, JsonCode.SUCCESS.getValue());
+        return map;
+    }
 
     /**
      * 上传物资对应的图片

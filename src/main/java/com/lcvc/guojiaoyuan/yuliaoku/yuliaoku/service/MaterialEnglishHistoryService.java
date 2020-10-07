@@ -70,20 +70,16 @@ public class MaterialEnglishHistoryService {
      * @param ids 多个记录的主键集合
      */
     public void deletes(Admin admin,Integer[] ids){
-        if(admin.isSuperAdmin()){//如果是超级管理员，可以删除
-            if(ids.length>0){//只有集合大于0才执行删除
-                materialEnglishHistoryDao.deletes(ids);
-            }
-        }else{//如果不是管理员，则只能删除自己的操作记录
-            for(Integer id:ids){
-                //查询该记录是否是操作用户创建的
-                MaterialEnglishHistory materialEnglishHistory=materialEnglishHistoryDao.get(id);
-                if(materialEnglishHistory!=null){//如果该记录存在
+        for(Integer id:ids){
+            //查询该记录是否是操作用户创建的
+            MaterialEnglishHistory materialEnglishHistory=materialEnglishHistoryDao.get(id);
+            if(materialEnglishHistory!=null){//如果该记录存在
+                if(materialEnglishHistory.getAudit()!=null){
+                    throw new MyServiceException("操作失败：已经审核通过的不允许删除");
+                }
+                if(!admin.isSuperAdmin()){//如果不是超级管理员，则只能删除自己的
                     if(!materialEnglishHistory.getOperator().equals(admin)){
                         throw new MyServiceException("操作失败：您不能删除别人的操作记录");
-                    }
-                    if(materialEnglishHistory.getAudit()!=null){
-                        throw new MyServiceException("操作失败：已经审核通过的不允许删除");
                     }
                 }
             }

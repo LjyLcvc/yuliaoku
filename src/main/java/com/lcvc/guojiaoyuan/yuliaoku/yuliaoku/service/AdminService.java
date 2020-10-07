@@ -223,7 +223,7 @@ public class AdminService {
         }else{
             throw new MyWebException("账户编辑失败：该账户不存在");
         }
-
+        adminDao.update(admin);
     }
 
     /**
