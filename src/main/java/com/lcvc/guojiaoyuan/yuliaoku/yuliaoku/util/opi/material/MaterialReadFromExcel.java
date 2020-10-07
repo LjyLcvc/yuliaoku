@@ -4,6 +4,7 @@ import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.Material;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.MaterialType;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.exception.MyServiceException;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.util.opi.base.MethorOfPOI;
+import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.util.string.MyStringUtil;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -11,7 +12,10 @@ import org.springframework.util.StringUtils;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 从Excel中读取物资记录
@@ -22,6 +26,7 @@ public class MaterialReadFromExcel {
      * 从输入流中读取excel的内容
      * 说明：
      * 1.已经有id的记录不进行读取
+     * 2.中文、英文、西文都将进行处理，保证前后没有空格，词组的间隔只有最多一个空格
      * @param inputStream
      * @return
      */
@@ -59,7 +64,7 @@ public class MaterialReadFromExcel {
                 if(StringUtils.isEmpty(chinese)){//如果中文名不存在，则说明该表格没有下一行。因为通过getLastRowNum可能因电子表格不一致导致不准确
                     break;
                 }
-                chinese=chinese.trim();
+                chinese= MyStringUtil.trimBeginEndAndRetainOneSpaceInMiddle(chinese);//清除前后空格，并保持中间空格最多一个
                 if(chinese.length()>50){
                     throw new MyServiceException("操作失败：导入的表格的工作簿（"+name+"）第"+(rowNum+1)+"行的中文列长度超过50个字符");
                 }
@@ -67,7 +72,7 @@ public class MaterialReadFromExcel {
                 material.setChinese(chinese);//设置中文名
                 String english=MethorOfPOI.getValue(row.getCell(2));
                 if(!StringUtils.isEmpty(english)){//如果不为空
-                    english=english.trim();
+                    english=MyStringUtil.trimBeginEndAndRetainOneSpaceInMiddle(english);//清除前后空格，并保持中间空格最多一个
                     if(english.length()>200){
                         throw new MyServiceException("操作失败：导入的表格的工作簿（"+name+"）第"+(rowNum+1)+"行的英文文列长度超过200个字符");
                     }
@@ -75,7 +80,7 @@ public class MaterialReadFromExcel {
                 }
                 String spanish=MethorOfPOI.getValue(row.getCell(3));
                 if(!StringUtils.isEmpty(spanish)){//如果不为空
-                    spanish=spanish.trim();
+                    spanish=MyStringUtil.trimBeginEndAndRetainOneSpaceInMiddle(spanish);//清除前后空格，并保持中间空格最多一个
                     if(spanish.length()>200){
                         throw new MyServiceException("操作失败：导入的表格的工作簿（"+name+"）第"+(rowNum+1)+"行的西文文列长度超过200个字符");
                     }

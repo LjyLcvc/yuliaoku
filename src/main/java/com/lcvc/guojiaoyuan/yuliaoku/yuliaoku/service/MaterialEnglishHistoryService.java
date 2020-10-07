@@ -12,6 +12,7 @@ import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.base.PageObject;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.exception.MyServiceException;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.exception.MyWebException;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.query.MaterialEnglishHistoryQuery;
+import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.util.string.MyStringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -150,7 +151,7 @@ public class MaterialEnglishHistoryService {
      * 1.如果是管理员添加，则直接通过审核，审核人就是自己
      * 2.如果是普通用户添加，则审核部分信息为空
      * @param materialId 物料的主键，不能为NULL
-     * @param english 英文，必须符合规则
+     * @param english 英文，必须符合规则,在录入后，将去掉头尾的空格，并且词组中间间隔最多一个空格
      * @param operator 操作员，不能为NULL
      */
     public void add(@NotNull(message = "请选择相应的物料") Integer materialId, @NotBlank(message = "请输入相应的英语")String english, Admin operator){
@@ -163,7 +164,7 @@ public class MaterialEnglishHistoryService {
             MaterialEnglishHistory materialEnglishHistory=new MaterialEnglishHistory();
             materialEnglishHistory.setMaterial(material);
             materialEnglishHistory.setOperator(operator);
-            materialEnglishHistory.setEnglish(english);
+            materialEnglishHistory.setEnglish(MyStringUtil.trimBeginEndAndRetainOneSpaceInMiddle(english));//去掉头尾的空格，并且词组中间间隔最多一个空格
             if(operator.isSuperAdmin()){//如果是管理员，则该物资默认已经审核
                 materialEnglishHistory.setAuditor(operator);//审核者为自己
                 materialEnglishHistory.setAudit(true);//审核通过
@@ -188,7 +189,7 @@ public class MaterialEnglishHistoryService {
      * @param english 英文，如果为NULL或空字符串，则不进行修改
      * @param operator 不能为NULL，如果不是提议的创建者，则不允许修改
      */
-    public void updateByMyself(@NotNull(message = "缺少主键") Integer materialEnglishHistoryId,Integer materialId, String english, Admin operator){
+    public void updateByMyself(@NotNull(message = "缺少主键") Integer materialEnglishHistoryId,Integer materialId, @NotBlank(message = "请输入相应的英语")String english, Admin operator){
         //前面必须经过spring验证框架的验证
         MaterialEnglishHistory materialEnglishHistory=materialEnglishHistoryDao.get(materialEnglishHistoryId);//读取原来的记录
         if(materialEnglishHistory!=null){
@@ -213,6 +214,7 @@ public class MaterialEnglishHistoryService {
                 if(english.length()==0&&english.length()>50){
                     throw new MyWebException("操作失败：物资英语的长度必须在1-50之间");
                 }
+                english=MyStringUtil.trimBeginEndAndRetainOneSpaceInMiddle(english);////去掉头尾的空格，并且词组中间间隔最多一个空格
                 if(english.equals(materialEnglishHistory.getEnglish())){//如果和原来的单词不同
                     materialEnglishHistory.setEnglish(english);
                 }

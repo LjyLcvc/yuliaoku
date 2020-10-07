@@ -15,6 +15,7 @@ import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.query.MaterialEnglishHistory
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.query.MaterialQuery;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.util.file.MyFileOperator;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.util.opi.material.MaterialReadFromExcel;
+import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.util.string.MyStringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -92,6 +93,23 @@ public class MaterialService {
     }
 
     /**
+     * 设置物料的关联属性，用于前台翻译
+     * @param material 必须有数据库该表的完整字段
+     * @param baseUrl 项目根目录网址，用于图片地址处理
+     */
+    private void setMaterialTranslationParam(Material material,String baseUrl){
+        /**
+         *  获取物料对应的图片集合
+         */
+        List<MaterialPhoto> materialPhotos=materialDao.getMaterialPhotos(material.getId());//获取数据库里的数据集合
+        //设置图片的网址
+        for(MaterialPhoto materialPhoto:materialPhotos){
+            materialPhoto.setPicUrl(getPictureUrl(baseUrl,materialPhoto.getPicUrl()));
+        }
+        material.setMaterialPhotos(materialPhotos);
+    }
+
+    /**
      * 分页查询记录，专用于前台翻译
      * @param page 当前页面
      * @param limit  每页最多显示的记录数
@@ -99,11 +117,22 @@ public class MaterialService {
      * @param baseUrl 项目根目录网址，用于图片地址处理
      */
     public PageObject queryForTranslation(Integer page, Integer limit, MaterialQuery materialQuery,String baseUrl){
+        if(materialQuery!=null){
+            if(materialQuery.getChinese()!=null){
+                materialQuery.setChinese(MyStringUtil.trimBeginEndAndRetainOneSpaceInMiddle(materialQuery.getChinese()));//清除前后空格，并保持中间空格最多一个
+            }
+            if(materialQuery.getEnglish()!=null){
+                materialQuery.setEnglish(MyStringUtil.trimBeginEndAndRetainOneSpaceInMiddle(materialQuery.getEnglish()));//清除前后空格，并保持中间空格最多一个
+            }
+            if(materialQuery.getSpanish()!=null){
+                materialQuery.setSpanish(MyStringUtil.trimBeginEndAndRetainOneSpaceInMiddle(materialQuery.getSpanish()));//清除前后空格，并保持中间空格最多一个
+            }
+        }
         PageObject pageObject = new PageObject(limit,page,materialDao.querySizeForTranslation(materialQuery));
         List<Material> materials=materialDao.queryForTranslation(pageObject.getOffset(),pageObject.getLimit(),materialQuery);
         pageObject.setList(materials);
         for(Material material:materials){
-            this.setMaterialParam(material,baseUrl);//设置关联属性
+            this.setMaterialTranslationParam(material,baseUrl);//设置关联属性
         }
         return pageObject;
     }
@@ -136,7 +165,6 @@ public class MaterialService {
         if(material!=null){
             this.setMaterialParam(material,baseUrl);//设置关联属性
         }
-
         return materialDao.get(id);
     }
 
@@ -179,10 +207,20 @@ public class MaterialService {
      * 添加记录
      * 说明：
      * 1.名称和排序属性均不能为空
+     * 2.中文、英文、西文都将进行处理，保证前后没有空格，词组的间隔只有最多一个空格
      * @param material
      */
     public void add(@Valid @NotNull(message = "表单没有传值到服务端") Material material){
         //前面必须经过spring验证框架的验证
+        if(material.getChinese()!=null){
+            material.setChinese(MyStringUtil.trimBeginEndAndRetainOneSpaceInMiddle(material.getChinese()));//清除前后空格，并保持中间空格最多一个
+        }
+        if(material.getEnglish()!=null){
+            material.setEnglish(MyStringUtil.trimBeginEndAndRetainOneSpaceInMiddle(material.getEnglish()));//清除前后空格，并保持中间空格最多一个
+        }
+        if(material.getSpanish()!=null){
+            material.setSpanish(MyStringUtil.trimBeginEndAndRetainOneSpaceInMiddle(material.getSpanish()));//清除前后空格，并保持中间空格最多一个
+        }
         materialDao.save(material);
     }
 
@@ -198,6 +236,9 @@ public class MaterialService {
         //前面必须经过spring验证框架的验证
         if(material.getId()==null){
             throw new MyServiceException("操作失败：物料标志符不能为空");
+        }
+        if(material.getChinese()!=null){
+            material.setChinese(MyStringUtil.trimBeginEndAndRetainOneSpaceInMiddle(material.getChinese()));//清除前后空格，并保持中间空格最多一个
         }
         //下述字段不允许修改
         material.setEnglish(null);

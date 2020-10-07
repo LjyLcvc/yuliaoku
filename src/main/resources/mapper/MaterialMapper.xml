@@ -169,10 +169,26 @@
                                     and  material.chinese like #{chinese}
                                 </when>
                                 <when test="objectQuery.queryType==2 and objectQuery.english!=null and objectQuery.english.length()>0">
-                                    and  FIND_IN_SET(#{objectQuery.english},replace(material.english," ",","))>0
+                                    <choose>
+                                        <when test='objectQuery.english.contains(" ")'>
+                                            <bind name="english" value="'%' + _parameter.objectQuery.english + '%'" />
+                                            and  material.english like #{english}
+                                        </when>
+                                        <otherwise>
+                                            and  FIND_IN_SET(#{objectQuery.english},replace(material.english," ",","))>0
+                                        </otherwise>
+                                    </choose>
                                 </when>
                                 <when test="objectQuery.queryType==3 and objectQuery.spanish!=null and objectQuery.spanish.length()>0">
-                                    and  FIND_IN_SET(#{objectQuery.spanish},replace(material.spanish," ",","))>0
+                                    <choose>
+                                        <when test='objectQuery.spanish.contains(" ")'>
+                                            <bind name="spanish" value="'%' + _parameter.objectQuery.spanish + '%'" />
+                                            and  material.spanish like #{spanish}
+                                        </when>
+                                        <otherwise>
+                                            and  FIND_IN_SET(#{objectQuery.spanish},replace(material.spanish," ",","))>0
+                                        </otherwise>
+                                    </choose>
                                 </when>
                                 <otherwise>
                                     and 1=0

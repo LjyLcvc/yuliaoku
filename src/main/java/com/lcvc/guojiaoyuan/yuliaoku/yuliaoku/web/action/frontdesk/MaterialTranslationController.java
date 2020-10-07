@@ -60,7 +60,7 @@ public class MaterialTranslationController {
      * @param english
      * @return
      */
-    @GetMapping(value = "/engLish")
+    @GetMapping(value = "/english")
     public Map<String, Object> engLish(Integer page, Integer limit,@NotBlank(message = "必须输入英文")String english,HttpServletRequest request){
         Map<String, Object> map=new HashMap<String, Object>();
         MaterialQuery materialQuery=new MaterialQuery();//创建查询条件
