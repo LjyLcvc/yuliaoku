@@ -122,6 +122,75 @@
 
     <!--==================================定制查询============================-->
 
+    <select id="queryForTranslation" resultMap="material">
+        select material.* from material
+        <include refid="queryWhereTranslation"></include>
+        <choose>
+            <when test="objectQuery!=null">
+                <choose>
+                    <when test="objectQuery.queryType!=null and objectQuery.queryType==1 and objectQuery.chinese!=null and objectQuery.chinese.length()>0">
+                        order by Length(material.chinese)/Length(#{objectQuery.chinese}) asc
+                    </when>
+                    <when test="objectQuery.queryType!=null and objectQuery.queryType==2 and objectQuery.english!=null and objectQuery.english.length()>0">
+                        order by Length(material.english)/Length(#{objectQuery.english}) asc
+                    </when>
+                    <when test="objectQuery.queryType!=null and objectQuery.queryType==3  and objectQuery.spanish!=null and objectQuery.spanish.length()>0">
+                        order by Length(material.spanish)/Length(#{objectQuery.spanish}) asc
+                    </when>
+                    <otherwise>
+                        order by material.id asc
+                    </otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                order by material.id asc
+            </otherwise>
+        </choose>
+        limit #{offset},#{length}
+    </select>
+
+    <select id="querySizeForTranslation" resultType="Integer">
+        select count(1) from (
+        select material.id from material
+        <include refid="queryWhereTranslation"></include>
+        ) u
+    </select>
+
+    <!--统一查询的条件，方便用于分页等查询-->
+    <sql id="queryWhereTranslation">
+        <choose>
+            <when test="objectQuery!=null">
+                <where>
+                    <choose>
+                        <when test="objectQuery.queryType!=null">
+                            <choose>
+                                <when test="objectQuery.queryType==1 and objectQuery.chinese!=null and objectQuery.chinese.length()>0">
+                                    <bind name="chinese" value="'%' + _parameter.objectQuery.chinese + '%'" />
+                                    and  material.chinese like #{chinese}
+                                </when>
+                                <when test="objectQuery.queryType==2 and objectQuery.english!=null and objectQuery.english.length()>0">
+                                    and  FIND_IN_SET(#{objectQuery.english},replace(material.english," ",","))>0
+                                </when>
+                                <when test="objectQuery.queryType==3 and objectQuery.spanish!=null and objectQuery.spanish.length()>0">
+                                    and  FIND_IN_SET(#{objectQuery.spanish},replace(material.spanish," ",","))>0
+                                </when>
+                                <otherwise>
+                                    and 1=0
+                                </otherwise>
+                            </choose>
+                        </when>
+                        <otherwise>
+                            and 1=0
+                        </otherwise>
+                    </choose>
+                </where>
+            </when>
+            <otherwise>
+                where 1=0
+            </otherwise>
+        </choose>
+    </sql>
+
     <select id="getMaterialPhoto"  resultType="MaterialPhoto">
         select * from material_photo where id=#{id}
     </select>

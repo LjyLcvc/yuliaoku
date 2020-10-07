@@ -92,6 +92,23 @@ public class MaterialService {
     }
 
     /**
+     * 分页查询记录，专用于前台翻译
+     * @param page 当前页面
+     * @param limit  每页最多显示的记录数
+     * @param materialQuery 查询条件类
+     * @param baseUrl 项目根目录网址，用于图片地址处理
+     */
+    public PageObject queryForTranslation(Integer page, Integer limit, MaterialQuery materialQuery,String baseUrl){
+        PageObject pageObject = new PageObject(limit,page,materialDao.querySizeForTranslation(materialQuery));
+        List<Material> materials=materialDao.queryForTranslation(pageObject.getOffset(),pageObject.getLimit(),materialQuery);
+        pageObject.setList(materials);
+        for(Material material:materials){
+            this.setMaterialParam(material,baseUrl);//设置关联属性
+        }
+        return pageObject;
+    }
+
+    /**
      * 分页查询记录
      * @param page 当前页面
      * @param limit  每页最多显示的记录数
