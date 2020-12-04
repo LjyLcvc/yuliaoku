@@ -7,10 +7,37 @@ import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.MaterialPhoto;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
 import java.util.List;
 
 @Repository//为了不让idea报错加上
 public interface MaterialDao extends IBaseDao<Material> {
+
+    /**
+     * 批量更改物料的逻辑删除状态，长度如果为0则不进行任何处理
+     * @param ids id集合
+     * @param removeStatus 移除状态
+     * @return  逻辑的记录数，>=1表示删除成功，0表示删除失败
+     */
+    int updateOfRemoves(java.io.Serializable[] ids,boolean removeStatus);
+
+    /**
+     * 根据标志符集合批量将词库修改审核状态，长度如果为0则不进行任何处理
+     * @param ids id集合
+     * @param auditorId 审核人
+     * @param auditTime 审核时间
+     * @param audit 审核结果
+     * @return  删除的记录数，>=1表示删除成功，0表示删除失败
+     */
+    int updatesOfAudit(java.io.Serializable[] ids, java.io.Serializable auditorId, Date auditTime,boolean audit);
+
+    /**
+     * 批量更改物料的所属栏目，长度如果为0则不进行任何处理
+     * @param ids id集合
+     * @param materialTypeId 所属栏目
+     * @return  逻辑的记录数，>=1表示删除成功，0表示删除失败
+     */
+    int updatesOfMaterialType(java.io.Serializable[] ids,int materialTypeId);
 
     /**
      * 物料翻译，专门用于前台翻译，
@@ -67,6 +94,8 @@ public interface MaterialDao extends IBaseDao<Material> {
      * @return
      */
     List<MaterialPhoto> getMaterialPhotos(int meterialId);
+
+
 
     /**
      * 删除物料对应的图片数量

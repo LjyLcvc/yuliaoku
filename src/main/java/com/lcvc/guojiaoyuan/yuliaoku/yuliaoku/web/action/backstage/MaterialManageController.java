@@ -1,11 +1,13 @@
 package com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.web.action.backstage;
 
 
+import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.Admin;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.Material;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.MaterialType;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.base.Constant;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.base.JsonCode;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.base.PageObject;
+import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.exception.MyServiceException;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.exception.MyWebException;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.query.MaterialQuery;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.service.MaterialService;
@@ -22,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -43,7 +46,7 @@ public class MaterialManageController {
     private String uploadFolder;//注入系统默认的上传路径
 
     /**
-     * 展示所有的物资列表，按照优先级升序排序
+     * 展示所有的物资列表（不包括被移除的物资），按照优先级升序排序
      * @param page 当前页
      * @param limit 每页记录数，如果为null则默认为20
      * @param materialQuery 查询条件
@@ -53,6 +56,11 @@ public class MaterialManageController {
         Map<String, Object> map=new HashMap<String, Object>();
         map.put(Constant.JSON_CODE, JsonCode.SUCCESS.getValue());
         String baseUrl = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+request.getContextPath()+"/";//获取项目根目录网址
+        //加上条件，移除的物资不显示
+        if(materialQuery==null){
+            materialQuery=new MaterialQuery();//创建查询条件
+        }
+        materialQuery.setRemoveStatus(false);
         PageObject pageObject =materialService.query(page,limit,materialQuery,baseUrl);
         map.put(Constant.JSON_TOTAL,pageObject.getTotalRecords());
         map.put(Constant.JSON_DATA,pageObject.getList());
@@ -73,14 +81,111 @@ public class MaterialManageController {
         return map;
     }
 
+    /**
+     * 添加物资，允许所有人添加
+     * @param material
+     */
+    @PostMapping
+    public Map<String, Object> add(@RequestBody Material material, HttpSession session){
+        Map<String, Object> map=new HashMap<String, Object>();
+        materialService.add(material,(Admin)session.getAttribute("admin"));
+        map.put(Constant.JSON_CODE, JsonCode.SUCCESS.getValue());
+        return map;
+    }
+
 
     /*============================下面设计是只有管理员才能操作=================================*/
+    /**
+     * 物料回收站。展示所有的被移除的物资列表（，按照优先级升序排序
+     * @param page 当前页
+     * @param limit 每页记录数，如果为null则默认为20
+     * @param materialQuery 查询条件
+     */
+    @GetMapping("/recycle/query")
+    public Map<String, Object> manageRecycle (Integer page, Integer limit, MaterialQuery materialQuery,HttpServletRequest request){
+        Map<String, Object> map=new HashMap<String, Object>();
+        map.put(Constant.JSON_CODE, JsonCode.SUCCESS.getValue());
+        String baseUrl = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+request.getContextPath()+"/";//获取项目根目录网址
+        //加上条件，移除的物资不显示
+        if(materialQuery==null){
+            materialQuery=new MaterialQuery();//创建查询条件
+        }
+        materialQuery.setRemoveStatus(false);
+        PageObject pageObject =materialService.query(page,limit,materialQuery,baseUrl);
+        map.put(Constant.JSON_TOTAL,pageObject.getTotalRecords());
+        map.put(Constant.JSON_DATA,pageObject.getList());
+        return map;
+    }
+
+    /**
+     * 批量变更物料所属类别
+     * @param ids 物资记录的标志符集合，前端传递格式：1,2,3
+     * @param materailTypeId 物料类别id
+     * @param
+     */
+    @PatchMapping("/manage/materialType/{materailTypeId}/{ids}")
+    public Map<String, Object> updatesOfMaterialType(@PathVariable("ids")Integer[] ids,@PathVariable("materailTypeId")Integer materailTypeId){
+        Map<String, Object> map=new HashMap<String, Object>();
+        materialService.updatesOfMaterialType(ids,materailTypeId);
+        map.put(Constant.JSON_CODE, JsonCode.SUCCESS.getValue());
+        return map;
+    }
+
+    /**
+     * 批量审核通过词库
+     * @param ids 物资记录的标志符集合，前端传递格式：1,2,3
+     */
+    @PatchMapping("/manage/auditPass/{ids}")
+    public Map<String, Object> auditPass(@PathVariable("ids")Integer[] ids,HttpSession session){
+        Map<String, Object> map=new HashMap<String, Object>();
+        materialService.updatesOfAudit(ids,(Admin)session.getAttribute("admin"),true);
+        map.put(Constant.JSON_CODE, JsonCode.SUCCESS.getValue());
+        return map;
+    }
+
+    /**
+     * 批量审核不通过该物料
+     * @param ids 物资记录的标志符集合，前端传递格式：1,2,3
+     */
+    @PatchMapping("/manage/auditRefuse/{ids}")
+    public Map<String, Object> auditRefuse(@PathVariable("ids")Integer[] ids,HttpSession session){
+        Map<String, Object> map=new HashMap<String, Object>();
+        materialService.updatesOfAudit(ids,(Admin)session.getAttribute("admin"),false);
+        map.put(Constant.JSON_CODE, JsonCode.SUCCESS.getValue());
+        return map;
+    }
+
+
+
+    /**
+     * 批量逻辑删除物资记录
+     * @param ids 物资记录的标志符集合，前端传递格式：1,2,3
+     */
+    @PatchMapping("/manage/remove/{ids}")
+    public Map<String, Object> removes(@PathVariable("ids")Integer[] ids){
+        Map<String, Object> map=new HashMap<String, Object>();
+        materialService.updateOfRemoves(ids,true);
+        map.put(Constant.JSON_CODE, JsonCode.SUCCESS.getValue());
+        return map;
+    }
+
+    /**
+     * 批量逻辑恢复物资记录的删除状态
+     * @param ids 物资记录的标志符集合，前端传递格式：1,2,3
+     */
+    @PatchMapping("/manage/recover/{ids}")
+    public Map<String, Object> recovers(@PathVariable("ids")Integer[] ids){
+        Map<String, Object> map=new HashMap<String, Object>();
+        materialService.updateOfRemoves(ids,false);
+        map.put(Constant.JSON_CODE, JsonCode.SUCCESS.getValue());
+        return map;
+    }
 
     /**
      * 批量删除物资记录，并删除对应的图片
      * @param ids 物资记录的标志符集合，前端传递格式：1,2,3
      */
-    @DeleteMapping("/manage/{ids}")
+    @DeleteMapping("/manage/delete/{ids}")
     public Map<String, Object> deletes(@PathVariable("ids")Integer[] ids){
         Map<String, Object> map=new HashMap<String, Object>();
         materialService.deletes(ids);
@@ -89,28 +194,16 @@ public class MaterialManageController {
     }
 
     /**
-     * 添加物资
-     * @param material
-     */
-    @PostMapping("/manage")
-    public Map<String, Object> add(@RequestBody Material material){
-        Map<String, Object> map=new HashMap<String, Object>();
-        materialService.add(material);
-        map.put(Constant.JSON_CODE, JsonCode.SUCCESS.getValue());
-        return map;
-    }
-
-    /**
      * 编辑物资
      * @param material
      */
-    @PutMapping("/manage")
+  /*  @PutMapping("/manage")
     public Map<String, Object> update(@RequestBody Material material){
         Map<String, Object> map=new HashMap<String, Object>();
         materialService.update(material);
         map.put(Constant.JSON_CODE, JsonCode.SUCCESS.getValue());
         return map;
-    }
+    }*/
 
     /**
      * 上传物资对应的图片
@@ -131,6 +224,9 @@ public class MaterialManageController {
             for(MultipartFile file:files){//遍历上传的图片
                 Material material=materialService.get(id,baseUrl);//获取物料对象
                 if(material!=null){//如果该物料存在，则执行上传
+                    if(material.getRemoveStatus()) {//如果该词库已经被移除
+                        throw new MyServiceException("操作失败：该物资已经被移除");
+                    }
                     MyFileOperator.createDir(fileUploadPath);//创建存储目录
                     String fileName=file.getOriginalFilename();//获取文件名
                     String extensionName=MyFileOperator.getExtensionName(fileName);//获取文件扩展名
@@ -194,12 +290,17 @@ public class MaterialManageController {
      * @param file 要上传的excel
      */
     @PostMapping("/manage/excel")
-    public Map<String, Object> uploadExcel(MultipartFile file) throws Exception{
+    public Map<String, Object> uploadExcel(MultipartFile file,HttpSession session) throws Exception{
         Map<String, Object> map=new HashMap<String, Object>();
         map.put(Constant.JSON_CODE, JsonCode.ERROR.getValue());//默认失败
         if(file!=null&&!file.isEmpty()){
+            String fileName=file.getOriginalFilename();//获取文件名
+            String extensionName=MyFileOperator.getExtensionName(fileName);//获取文件扩展名
+            if(!extensionName.equals("xlsx")){
+                throw new MyWebException("操作失败：支持上传xlsx格式的文件");
+            }
             //String filePath=uploadFolder+Constant.MATERIAL_EXCEL_UPLOAD_PATH;//获取excel上传后保存的物理路径
-            int number=materialService.addMaterialsFromExcel(file.getInputStream());
+            int number=materialService.addMaterialsFromExcel(file.getInputStream(),(Admin)session.getAttribute("admin"));
             map.put(Constant.JSON_CODE, JsonCode.SUCCESS.getValue());
             map.put(Constant.JSON_DATA,number);
         }else{

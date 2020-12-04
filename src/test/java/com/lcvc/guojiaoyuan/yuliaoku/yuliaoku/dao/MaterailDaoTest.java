@@ -7,6 +7,7 @@ import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.query.MaterialQuery;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.Date;
 import java.util.List;
 
 public class MaterailDaoTest extends YuliaokuApplicationTests {
@@ -52,5 +53,11 @@ public class MaterailDaoTest extends YuliaokuApplicationTests {
             System.out.print(material.getChinese()+"\t");
             System.out.println(material.getEnglish());
         }
+    }
+
+    @Test
+    public void testUpdateOfAuditRefuse(){
+        Integer[] ids=new Integer[]{1,3};
+        materialDao.updatesOfAudit(ids,"lcvc",new Date(),true);
     }
 }

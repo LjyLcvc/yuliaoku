@@ -3,15 +3,14 @@ package com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.service;
 
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.dao.AdminDao;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.dao.MaterialDao;
-import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.dao.MaterialEnglishHistoryDao;
+import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.dao.MaterialHistoryDao;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.dao.MaterialTypeDao;
-import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.Material;
-import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.MaterialPhoto;
-import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.MaterialType;
+import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.*;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.base.Constant;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.base.PageObject;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.exception.MyServiceException;
-import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.query.MaterialEnglishHistoryQuery;
+import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.exception.MyWebException;
+import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.query.MaterialHistoryQuery;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.query.MaterialQuery;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.util.file.MyFileOperator;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.util.opi.material.MaterialReadFromExcel;
@@ -28,10 +27,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Transactional(propagation = Propagation.REQUIRED,isolation = Isolation.DEFAULT,timeout=36000,rollbackFor=Exception.class)
@@ -47,7 +43,7 @@ public class MaterialService {
     @Autowired
     private MaterialDao materialDao;
     @Autowired
-    private MaterialEnglishHistoryDao materialEnglishHistoryDao;
+    private MaterialHistoryDao materialHistoryDao;
 
     /**
      * 获取图片上传到服务器后的完整物理路径，可用于文件的操作，如删除
@@ -78,9 +74,9 @@ public class MaterialService {
         /**
          * 获取物料对应的提议数量
          */
-        MaterialEnglishHistoryQuery materialEnglishHistoryQuery=new MaterialEnglishHistoryQuery();
+        MaterialHistoryQuery materialEnglishHistoryQuery=new MaterialHistoryQuery();
         materialEnglishHistoryQuery.setMaterial(material);
-        material.setMaterialEnglishHistoryNumber(materialEnglishHistoryDao.querySize(materialEnglishHistoryQuery));
+        material.setMaterialEnglishHistoryNumber(materialHistoryDao.querySize(materialEnglishHistoryQuery));
         /**
          *  获取物料对应的图片集合
          */
@@ -138,7 +134,7 @@ public class MaterialService {
     }
 
     /**
-     * 分页查询记录
+     * 分页查询记录，查询所有
      * @param page 当前页面
      * @param limit  每页最多显示的记录数
      * @param materialQuery 查询条件类
@@ -155,7 +151,7 @@ public class MaterialService {
     }
 
     /**
-     * 根据标志符读取指定记录
+     * 根据标志符读取指定记录(被移除的物资不显示)
      * @param id
      * @param baseUrl 项目根目录网址，用于图片地址处理
      * @return
@@ -163,16 +159,51 @@ public class MaterialService {
     public Material get(@NotNull Integer id,String baseUrl) {
         Material material=materialDao.get(id);
         if(material!=null){
-            this.setMaterialParam(material,baseUrl);//设置关联属性
+            if(!material.getRemoveStatus()){
+                this.setMaterialParam(material,baseUrl);//设置关联属性
+            }else{
+                throw new MyServiceException("操作失败：该物资已经被移除");
+            }
+
         }
         return materialDao.get(id);
+    }
+
+    /**
+     * 批量更改物料的所属栏目
+     * 说明：
+     * @param ids 多个记录的主键集合
+     * @param materailTypeId 要变更的物料类别
+     */
+    public void updatesOfMaterialType(Integer[] ids,@NotNull(message = "必须填写要变更的物料类别")Integer materailTypeId){
+        //先进行验证
+        if(ids.length>0){//只有集合大于0才执行删除
+            MaterialType materialType=materialTypeDao.get(materailTypeId);//读取栏目
+            if(materialType!=null){//如果该栏目存在
+                materialDao.updatesOfMaterialType(ids,materailTypeId);
+            }else{
+                throw new MyServiceException("操作失败：要变更的物料类别不存在");
+            }
+        }
+    }
+
+    /**
+     * 批量更改物料的逻辑删除指状态
+     * 说明：逻辑删除，该物料对应的图片和物料提议保留
+     * @param ids 多个记录的主键集合
+     */
+    public void updateOfRemoves(Integer[] ids,@NotNull(message = "必须填写要更改的物料移除状态") Boolean removeStatus){
+        //先进行验证
+        if(ids.length>0){//只有集合大于0才执行删除
+            materialDao.updateOfRemoves(ids,removeStatus);//逻辑删除物料集合
+        }
     }
 
 
     /**
      * 批量删除指定记录
      * 说明：
-     * 1.如果该物资下有操作记录，则一起删除
+     * 1.如果该物资下有提议，则一起删除
      * 2.如果该物料有图片，则将数据库记录和相应的图片一起删除
      * @param ids 多个记录的主键集合
      */
@@ -184,7 +215,7 @@ public class MaterialService {
                 /**
                  * 检查该物资下是否有操作记录，如果有则删除所有操作记录
                  */
-                materialEnglishHistoryDao.deleteByMaterial(id);
+                materialHistoryDao.deleteByMaterial(id);
                 /**
                  * 检查该物资是否有图片，如果有则删除所有图片
                  */
@@ -208,9 +239,10 @@ public class MaterialService {
      * 说明：
      * 1.名称和排序属性均不能为空
      * 2.中文、英文、西文都将进行处理，保证前后没有空格，词组的间隔只有最多一个空格
+     * 3.添加词库的同时，物料提议也添加进去
      * @param material
      */
-    public void add(@Valid @NotNull(message = "表单没有传值到服务端") Material material){
+    public void add(@Valid @NotNull(message = "表单没有传值到服务端") Material material, @NotNull(message = "清先登陆")Admin operator){
         //前面必须经过spring验证框架的验证
         if(material.getChinese()!=null){
             material.setChinese(MyStringUtil.trimBeginEndAndRetainOneSpaceInMiddle(material.getChinese()));//清除前后空格，并保持中间空格最多一个
@@ -221,7 +253,75 @@ public class MaterialService {
         if(material.getSpanish()!=null){
             material.setSpanish(MyStringUtil.trimBeginEndAndRetainOneSpaceInMiddle(material.getSpanish()));//清除前后空格，并保持中间空格最多一个
         }
-        materialDao.save(material);
+        if(operator.isSuperAdmin()) {//如果是管理员，则该物资默认已经审核
+            material.setAuditor(operator);//审核者为自己
+            material.setAudit(true);//审核通过
+            material.setAuditTime(Calendar.getInstance().getTime());//审核时间
+        }
+        materialDao.save(material);//保存物料到数据库
+        /**
+         * 进行处理，将物料提议作为该词库的第一次记录提交
+         */
+        MaterialHistory materialHistory =new MaterialHistory();
+        materialHistory.setMaterial(material);
+        materialHistory.setOperator(operator);
+        materialHistory.setHistoryType(0);//设置为全修改
+        materialHistory.setChinese(material.getChinese());
+        materialHistory.setEnglish(material.getEnglish());
+        materialHistory.setSpanish(material.getSpanish());
+        if(operator.isSuperAdmin()){//如果是管理员，则该物资默认已经审核
+            materialHistory.setAuditor(operator);//审核者为自己
+            materialHistory.setAudit(true);//审核通过
+            materialHistory.setAuditTime(Calendar.getInstance().getTime());//审核时间
+        }
+        materialHistoryDao.save(materialHistory);//记录该次物料提议
+    }
+
+     /**
+     * 批量将词库改为指定的审核状态
+     * 说明：
+     * 1.必须是管理员才可以操作
+     * 2.已经审核通过的物资不允许再修改状态
+      *3.已经被移除的物资不允许修改
+      *4.如果物料最终审核通过，则原来的提议也审核通过
+     * @param auditor 操作管理员
+     * @param ids 多个记录的主键集合
+     */
+    public void updatesOfAudit(@NotNull Integer[] ids,Admin auditor,@NotNull(message = "必须填写审核结果") Boolean audit){
+        List<MaterialHistory> materialHistories=new ArrayList<MaterialHistory>();//要审核的物料提议数（在创建词库时产生）
+        if(!auditor.isSuperAdmin()){//如果不是管理员，则不允许审核
+            throw new MyWebException("操作失败：必须是管理员才能审核");
+        }else{//如果满足审核条件
+            for(Integer id:ids){
+                //查询该记录的审核状态是否已经通过
+                Material material = materialDao.get(id);//读取原来的记录
+                if(material !=null){//如果该记录存在
+                    if(material.getAudit()!=null&& material.getAudit()){//如果该词库已经审核通过
+                        throw new MyServiceException("操作失败："+material.getChinese()+"已经审核通过。审核通过的物料不能再更改状态。如果不需要该词库可以选择移除");
+                    }
+                    if(material.getRemoveStatus()){//如果该物资已经被移除
+                        throw new MyServiceException("操作失败："+material.getChinese()+"已经被移除，无法更改审核状态");
+                    }
+                    //获取物料对应的日志
+                    MaterialHistoryQuery materialHistoryQuery=new MaterialHistoryQuery();
+                    materialHistoryQuery.setMaterial(material);
+                    materialHistories.addAll(materialHistoryDao.readAll(materialHistoryQuery));//虽然是查询集合，但按照业务规则，一个词库未审核前只有一个相关提议
+                }
+            }
+            materialDao.updatesOfAudit(ids,auditor.getUsername(),Calendar.getInstance().getTime(),audit);//批量修改审核结果
+            //将物料提议批量改为与物料相同的审批状态
+            if(materialHistories.size()>0){
+                Integer[] materialHistorieIds=new Integer[materialHistories.size()];
+                int i=0;
+                for(MaterialHistory materialHistory:materialHistories){
+                    materialHistory.setAuditor(auditor);//审核者为自己
+                    materialHistory.setAudit(audit);//审核结果
+                    materialHistory.setAuditTime(Calendar.getInstance().getTime());//审核时间
+                    materialHistorieIds[i++]=materialHistory.getId();
+                }
+                materialHistoryDao.updateOfAudit(materialHistorieIds,auditor.getUsername(),audit,Calendar.getInstance().getTime());//批量修改物料提议
+            }
+        }
     }
 
     /**
@@ -229,22 +329,22 @@ public class MaterialService {
      * 编辑记录
      * 说明：
      * 1.物料标志符不能为空
-     * 2.只能修改所属物料类别和物料中文名
+     * 2.只能修改所属物料类别
      * @param material
      */
-    public void update(@Valid @NotNull(message = "表单没有传值到服务端") Material material){
+  /*  public void update(@Valid @NotNull(message = "表单没有传值到服务端") Material material){
         //前面必须经过spring验证框架的验证
         if(material.getId()==null){
             throw new MyServiceException("操作失败：物料标志符不能为空");
         }
-        if(material.getChinese()!=null){
+       *//* if(material.getChinese()!=null){
             material.setChinese(MyStringUtil.trimBeginEndAndRetainOneSpaceInMiddle(material.getChinese()));//清除前后空格，并保持中间空格最多一个
-        }
+        }*//*
         //下述字段不允许修改
         material.setEnglish(null);
         material.setSpanish(null);
         materialDao.update(material);
-    }
+    }*/
 
     /**
      *
@@ -294,7 +394,7 @@ public class MaterialService {
 
 
     /**
-     * 读取物料的所有信息
+     * 读取物料的所有信息（不包括被移除的物资）
      * 键值：物料类别-》物料类别下的所有物料信息。
      * @return
      */
@@ -303,6 +403,7 @@ public class MaterialService {
         List<MaterialType> materialTypes=materialTypeDao.readAll(null);//读取所有的栏目
         for(MaterialType materialType:materialTypes){
             MaterialQuery materialQuery=new MaterialQuery();
+            materialQuery.setRemoveStatus(false);//加上条件，移除的物资不显示
             materialQuery.setMaterialType(materialType);
             List<Material> materials=materialDao.readAll(materialQuery);//读取指定类别的物料
             map.put(materialType,materials);
@@ -312,14 +413,18 @@ public class MaterialService {
 
     /**
      * 导入电子表格
+     * 1.导入的新词将导入系统中
+     * 2.导入的新词也将作为提议存入系统中
      * @param inputStream
+     * @param operator 操作的管理员
      * @return 返回成功导入的数量
      * @throws Exception
      */
-    public int addMaterialsFromExcel(InputStream inputStream) throws Exception {
+    public int addMaterialsFromExcel(InputStream inputStream,Admin operator) throws Exception {
         AtomicInteger count = new AtomicInteger(0);//记录成功导入的记录数.lambda要用这个形式来处理
         //从上传的excel中得到表格的数据
         Map<MaterialType, List<Material>> map= MaterialReadFromExcel.getExcel(inputStream);
+        List<MaterialHistory> materialHistories=new ArrayList<MaterialHistory>();//创建提议历史
         if(map.size()>0){
             map.forEach((materialType, materials) ->{
                 //对物资类别进行处理
@@ -342,8 +447,27 @@ public class MaterialService {
                     material.setMaterialType(materialType);//附上所属的物资类别
                 }
                 materialDao.saves(materials);
+                for(Material material:materials){//将词库遍历为提议
+                    /**
+                     * 进行处理，将物料提议作为该词库的第一次记录提交
+                     */
+                    MaterialHistory materialHistory =new MaterialHistory();
+                    materialHistory.setMaterial(material);
+                    materialHistory.setOperator(operator);
+                    materialHistory.setHistoryType(0);//设置为全修改
+                    materialHistory.setChinese(material.getChinese());
+                    materialHistory.setEnglish(material.getEnglish());
+                    materialHistory.setSpanish(material.getSpanish());
+                    if(operator.isSuperAdmin()){//如果是管理员，则该物资默认已经审核
+                        materialHistory.setAuditor(operator);//审核者为自己
+                        materialHistory.setAudit(true);//审核通过
+                        materialHistory.setAuditTime(Calendar.getInstance().getTime());//审核时间
+                    }
+                    materialHistories.add(materialHistory);
+                }
             });
         }
+        materialHistoryDao.saves(materialHistories);//存储提议日志
         return count.intValue();
     }
 

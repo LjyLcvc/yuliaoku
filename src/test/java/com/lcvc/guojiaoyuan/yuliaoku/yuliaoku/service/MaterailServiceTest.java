@@ -16,4 +16,10 @@ public class MaterailServiceTest extends YuliaokuApplicationTests {
         InputStream is = new FileInputStream("d:/test.xlsx");
         materialService.addMaterialsFromExcel(is);
     }
+
+    @Test
+    public void testRemoves(){
+        Integer[] ids=new Integer[]{1,3};
+        materialService.updateOfRemoves(ids,true);
+    }
 }

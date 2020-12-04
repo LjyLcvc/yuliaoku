@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>首页</title>
+    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" type="text/css" href="css/dialog.css">
+    <script src="js/jq2.0.js"></script>
+    <script src="js/loginBox.js"></script>
+    <script src="js/jquery-3.3.1.js"></script>
+
+    <script src="js/popup-w.js"></script>
+    <style>
+
+    </style>
+</head>
+
+<body>
+    <header>
+        <!-- 头部 左上 str -->
+        <div>
+            <ul>
+                <!-- <li id="logo"><img src="images/Snap3.jpg" alt=""></li>      -->
+                <li id="lcvc_logo"><img src="images/lcvc_logo.png" alt="柳城职"></li>
+                <li id="motor"><img src="images/东风logo-02.png" alt="东风"></li>
+                <li id="dragon"><img src="images/乘龙logo_画板-1.png" alt="乘龙"></li>
+                <li id="dict">词典翻译</li>
+            </ul>
+        </div>
+        <!-- 头部 右上 str  -->
+        <div id="enter">
+            <a id="login" onclick="openLogin()">登录</a>
+        </div>
+    </header>
+    <!-- 中部 str -->
+    <section>
+        <div>
+            <!-- 选择语言按钮 -->
+            <div id="language-btn">
+                <span id="languge-sel">
+                    <div>
+                        <span id="span-sel">选择语言</span>
+                        <img id="arrow" src="images/箭头.png" alt="">
+                    </div>
+                </span>
+            </div>
+            <!-- 翻译语言菜单 -->
+            <div id="language-menu" onclick="menuClose()">
+                <span class="language2" style="margin-top: 20px;">选择翻译方式</span><br>
+                <span class="language" id="cn" value="cn-en" style="clear: left">中文 > 英文</span>
+                <span class="language" value="cn-sn">中文 > 西班牙</span>
+                <span class="language" id="en" value="en-cn">英文 > 中文</span>
+                <span class="language" value="sn-cn">西班牙 > 中文</span>
+            </div>&nbsp;&nbsp;&nbsp;<a id="Tran" onclick="showWord()" onselectstart='return false'>翻译</a>
+        </div>
+        <!-- 语言输入 -->
+        <div id="textarea-input">
+            <textarea ref="textarea" id="text" type="text" placeholder="请输入文字" style="height:89%;width:96%;" maxlength="300"
+                oninput="Input(this)"></textarea><i class="icon-del"></i>
+        </div>
+        <!-- 翻译单词 -->
+        <div id="textarea-output">
+            <audio src="" id="icon-soundTwo"></audio>
+<!--                <figure>-->
+<!--                     <span id="broadcast"></span>-->
+<!--                     <a href=""><img src="images/lb.png" onclick="play()" alt="user"></a>-->
+<!--                </figure>-->
+<!--                <p class="text-dup"><a href="#"><img src="images/复制.png" alt=""></a></p>-->
+<!--                <p class="text-share"><a href="#"><img src="images/分享.png" alt=""></a></p>-->
+        </div>
+        <!-- 诠释 -->
+        <div id="textarea-info">
+
+        </div>
+        </div>
+        <!-- 宣传区 -->
+        <div id="prop"><img src="images/lcvccat.png" alt=""></div>
+        <!-- 登录界面 -->
+        <div id="LoginBox">
+            <div class="loginMenu">
+                <div id="close" onclick="closeLogin()" style="font-family:'黑体';">x
+                </div>
+                <p style="font-family:'黑体';font-size:18px;margin:10px;">请登录</p>
+                <div class="BoxInput">
+                    <form action="Login">
+                        <div class="input user"><span><input type="text" id="username"
+                                    style="width: 60%;height:36px;font-size: 16px;padding-left: 12%;-webkit-box-sizing: border-box;"
+                                    maxlength="18" placeholder="请输入您的用户名/手机号"></span><i class="toast_user"></i></div>
+                        <label style="display:none;font-size:12px;">111</label>
+                        <div class="input pass"><span><input type="password" id="password"
+                                    style="width: 60%;height:36px;font-size: 16px;padding-left: 12%;-webkit-box-sizing: border-box;"
+                                    maxlength="18" placeholder="请输入您的密码"></span><i class="toast_pass"></i><i class="check"></i></div>
+                        <label style="display:none;font-size:12px;">111</label>
+                        <label style="display:none;">111</label>
+                        <div class="input code"><span style="user-select:none;-webkit-user-select:none;-moz-user-select:none;"><input type="text" id="code"
+                                    style="width:60%;height:36px;font-size: 16px;padding-left: 12%;-webkit-box-sizing: border-box;"
+                                    maxlength="4" placeholder="请输入验证码"></span><i class="toast_code"></i>
+                            <img src="img/验证码.png" id="check" alt="">
+                        </div>
+                        <canvas id="canvas" onclick="dj() " style="border: 1px solid #ccc; "></canvas>
+                        <div class="btn" onclick="sublim()">登录</div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 底部 str -->
+    <footer>
+        <p id="east-w">
+            &copy;&nbsp;2020&nbsp;&nbsp;东风汽车公司&nbsp;&nbsp;&nbsp;经营许可证号&nbsp;:&nbsp;鄂ICP备05012942号-1&nbsp;&nbsp;鄂公网安备&nbsp;42010502000443号
+        </p>
+    </footer>
+</body>
+
+<script>
+    //全局变量
+    var number = 1; //查询出来的数据条数
+    var page = 0; //当前页
+    var limit = 1; //每页显示数据
+    var count = 0; //总记录数
+    var maxPage = 0; //最大页数
+    var num=1; //序号
+    //翻译选择默认
+    function Default() {
+        $('#span-sel').attr('value', 'cn-en');
+        $("#span-sel").text("中文 > 英文");
+    }
+    Default()
+    //删除内容
+    function close() {
+        page = 0;
+        $("#text").val("");
+        //jq对象转js对象
+        $('#textarea-input').get(0).style.border="rgb(233, 233, 238) 1px solid";
+        $('#quit').html("");
+        $('#textarea-output').text("");
+    }
+    //输入框文本内容
+    function showWord() {
+        num=1;
+        page = 0;
+		let text = $("#text").val();
+        //页面核心交互
+        if ($('#span-sel').attr("value") == 'cn-en') {
+            popup({
+                type: 'load',
+                msg: "翻译中,请稍等",
+                delay: 1500,
+                callBack: function () {
+                    if ($('#text').val() == "") {
+                        popup({
+                            type: 'error',
+                            msg: "请输入翻译内容!",
+                            delay: 1200,
+                            bg: true
+                        });
+                        close()
+                        return false;
+                    } else {
+                        //第一个是右边内容框
+                        $.ajax({
+                            url: 'http://112.124.19.158:8091/api/frontdesk/material_translation/chinese?' +"chinese=" + text,
+                            type: 'get',
+                            data: $('#input').serialize(), //表单序列化
+                            success: function (data) {
+                                if(data.count!=0){
+                                    //遍历数组元素
+                                    $.each(data.data, function (key, value) {
+                                        // $('#textarea-output').append('<p>'+'搜到'+'<span style="color:blue">'+data.count+'</span>'+'条消息'+'</p>');
+                                        $('#textarea-output').html('<p style="margin-top: 14px;margin-left:21px;">'+'<span class="Height_light">'+value.english+'</span>'+'<br>'+'<span style="color:#9e9c9c;letter-spacing:3px;font-size: 14px;">'+'搜到'+'<span style="color:blue;letter-spacing:3px;">'+data.count+'</span>'+'条记录'+'</span>'+'</p>');
+                                    });
+                                    //绑定移入移出-高亮
+                                    $('.Height_light').on("mouseenter",function () {
+                                        $(this).css("background-color","yellow")
+                                        $("#text").css("color","rgba(230,230,10,1)")
+                                    })
+                                    $('.Height_light').on("mouseleave",function () {
+                                        $(this).css("background-color","")
+                                        $("#text").css("color","black")
+                                    })
+                                }
+                            }
+                        });
+                        //回调是输入框下面的内容框
+                         $.ajax({
+                            url: 'http://112.124.19.158:8091/api/frontdesk/material_translation/chinese?' +"chinese=" + text + "&limit=" + limit,
+                            type: 'get',
+                            data: $('#input').serialize(), //表单序列化
+                            success: function (data2) {
+                                    //获取总记录数
+                                    count = data2.count;
+                                    if(count!=0){
+                                        //清空相关信息
+                                        $('#textarea-info').html(" ");
+                                        //整体的div
+                                        let htm = "<div style='margin-left:1.5em;' id='quit'>";
+                                        $('#textarea-info').append(htm);
+                                        $('#textarea-info').append("</div>");
+                                        //p标签：显示中文
+                                        let p_chinese =
+                                            "<p id='p_chinese' class='translation' style='display:inline-block'>";
+                                        $('#quit').append(p_chinese);
+                                        $('#quit').append("</p>");
+                                        //p标签:显示名词
+                                        let p_noun =
+                                            "<p id='p_noun' class='translation' style='display:block;margin-bottom: 0;color:gray'>";
+                                        $('#quit').append(p_noun);
+                                        $('#quit').append("</p>");
+                                        //span标签:显示英文
+                                        let span_english = "<p>";
+                                        $('#quit').append("<span id='tr_title'>");
+                                        $('#quit').append(span_english);
+                                        $('#quit').append("</span>");
+                                        $('#quit').append("</p>");
+                                        //span标签:显示多种翻译
+                                        let span_noun =
+                                            "<p id='tr_exp' style='text-decoration:none;font-family:'黑体';color: #999999'>";
+                                        $('#quit').append(span_noun);
+                                        $('#quit').append("</p>");
+                                        //p标签:显示图片
+                                        let img ="<img id='img' style='height:154px;border-radius:4px'/>";
+                                        let img2 ="<img id='img2' style='height:154px;border-radius:4px'/>";
+                                        let img3 ="<img id='img3' style='height:154px;border-radius:4px'/>";
+                                        $('#quit').append(img);
+                                        $('#quit').append(img2);
+                                        $('#quit').append(img3);
+                                        //下拉按钮
+                                        let btn ="<div id='button' style='margin-left:-1.5em;margin-bottom:1.5em;text-align:center'><button id='most' onclick='cl_most()' style=\"width:16px;height:16px;background:url('images/折叠3.png') no-repeat center;border:0;outline:0\"></button></div>";
+                                        $('#quit').append(btn);
+                                        //遍历数组元素
+                                        $.each(data2.data, function (key, value) {
+                                            console.log(value);
+                                            //显示中文
+                                            $('#p_chinese').append(value.chinese);
+                                            //显示名词
+                                            $('#p_noun').append("名词");
+                                            //显示英文
+                                            $('#tr_title').append(value.english);
+                                            // //显示多种翻译
+                                            $('#tr_exp').append(value.chinese);
+                                            //显示图片
+                                            if (value.materialPhotos.length == 0) {
+                                                $('#img').remove()
+                                                $('#img2').remove()
+                                                $('#img3').remove()
+                                            } else if(value.materialPhotos.length == 1){
+                                                //显示图片
+                                                $('#img').attr('src', (value.materialPhotos[0].picUrl));
+                                                $('#img2').remove()
+                                                $('#img3').remove()
+                                            }else if(value.materialPhotos.length == 2){
+                                                $('#img').attr('src', (value.materialPhotos[0].picUrl));
+                                                $('#img2').attr('src', (value.materialPhotos[1].picUrl));
+                                                $('#img3').remove()
+                                            }else{
+                                                $('#img').attr('src', (value.materialPhotos[0].picUrl));
+                                                $('#img2').attr('src', (value.materialPhotos[1].picUrl));
+                                                $('#img3').attr('src', (value.materialPhotos[2].picUrl));
+                                            }
+                                        });
+                                    }else{
+                                        close()
+                                        popup({type:'tip',msg:"没有"+text+"的记录",delay:1500,bg:false});
+                                    }
+                            }
+                        });
+                        count=0;
+                    }
+                }
+            });
+        } else if ($('#span-sel').attr("value") == 'en-cn') {
+            popup({
+                type: 'load',
+                msg: "翻译中,请稍等",
+                delay: 1500,
+                callBack: function () {
+                    if ($('#text').val() == "") {
+                        popup({
+                            type: 'error',
+                            msg: "请输入翻译内容!",
+                            delay: 1200,
+                            bg: true
+                        });
+                        close()
+                        return false;
+                    } else {
+                        $.ajax({
+                            url: 'http://112.124.19.158:8091/api/frontdesk/material_translation/english?' +"english=" + text,
+                            type: 'get',
+                            data: $('#input').serialize(), //表单序列化
+                            success: function (data) {
+                                if(data.count!=0){
+                                    //遍历数组元素
+                                    $.each(data.data, function (key, value) {
+                                        $('#textarea-output').html('<p style="margin-top: 14px;margin-left:21px;">'+'<span class="Height_light">'+value.chinese+'</span>'+'<br>'+'<span style="color:#9e9c9c;letter-spacing:3px;font-size: 14px;">'+'搜到'+'<span style="color:blue;letter-spacing:3px;">'+data.count+'</span>'+'条记录'+'</span>'+'</p>');
+                                    });
+                                    //绑定移入移出-高亮
+                                    $('.Height_light').on("mouseenter",function () {
+                                        $(this).css("background-color","yellow")
+                                        $("#text").css("color","rgba(230,230,10,1)")
+                                    })
+                                    $('.Height_light').on("mouseleave",function () {
+                                        $(this).css("background-color","")
+                                        $("#text").css("color","black")
+                                    })
+
+                                }
+                            }
+                        })
+
+                        $.ajax({
+                            url: 'http://112.124.19.158:8091/api/frontdesk/material_translation/english?' +"english=" + text + "&limit=" + limit,
+                            type: 'get',
+                            data: $('#input').serialize(), //表单序列化
+                            success: function (data2) {
+                                //获取总记录数
+                                count = data2.count;
+                                if (count!=0){
+                                    $('#textarea-info').html(" ");
+                                    //整体的div
+                                    let htm = "<div style='margin-left:1.5em;' id='quit'>";
+                                    $('#textarea-info').append(htm);
+                                    $('#textarea-info').append("</div>");
+                                    //p标签：显示中文
+                                    let p_chinese = "<p id='p_chinese' class='translation' style='display:inline-block'>";
+                                    $('#quit').append(p_chinese);
+                                    $('#quit').append("</p>");
+                                    //p标签:显示名词
+                                    let p_noun = "<p id='p_noun' class='translation' style='display:block;margin-bottom: 0;color:gray'>";
+                                    $('#quit').append(p_noun);
+                                    $('#quit').append("</p>");
+                                    //span标签:显示英文
+                                    let span_english = "<p><span id='tr_title'>";
+                                    $('#quit').append(span_english);
+                                    $('#quit').append("</span></p>");
+                                    //span标签:显示多种翻译
+                                    let span_noun =
+                                        "<p><span id='tr_exp' style='text-decoration:none;font-family:'黑体';color: #999999'>";
+                                    $('#quit').append(span_noun);
+                                    $('#quit').append("</span></p>");
+
+                                    //p标签:显示图片
+                                    let img = "<img id='img' style='height:154px;border-radius:4px'/>";
+                                    let img2 = "<img id='img2' style='height:154px;border-radius:4px'/>";
+                                    let img3 = "<img id='img3' style='height:154px;border-radius:4px'/>";
+                                    $('#quit').append(img);
+                                    $('#quit').append(img2);
+                                    $('#quit').append(img3);
+                                    //下拉按钮
+                                    let btn = "<div id='button' style='margin-left:-1.5em;margin-bottom:1.5em;text-align:center'><button id='most' onclick='cl_most()' style=\"width:16px;height:16px;background:url('images/折叠3.png') no-repeat center;border:0;outline:0\"></button></div>";
+                                    $('#quit').append(btn);
+                                    //遍历数组元素
+                                    $.each(data2.data, function (key, value) {
+                                        console.log(value);
+                                        //显示中文
+                                        $('#p_chinese').append(value.english);
+                                        //显示名词
+                                        $('#p_noun').append("名词");
+                                        //显示英文
+                                        $('#tr_title').append(value.english);
+
+                                        // //显示多种翻译
+                                        $('#tr_exp').append(value.chinese);
+
+                                        //显示图片
+                                        if (value.materialPhotos.length == 0) {
+                                            $('#img').remove()
+                                            $('#img2').remove()
+                                            $('#img3').remove()
+                                        } else if(value.materialPhotos.length == 1){
+                                            //显示图片
+                                            $('#img').attr('src', (value.materialPhotos[0].picUrl));
+                                            $('#img2').remove()
+                                            $('#img3').remove()
+                                        }else if(value.materialPhotos.length == 2){
+                                            $('#img').attr('src', (value.materialPhotos[0].picUrl));
+                                            $('#img2').attr('src', (value.materialPhotos[1].picUrl));
+                                            $('#img3').remove()
+                                        }else{
+                                            $('#img').attr('src', (value.materialPhotos[0].picUrl));
+                                            $('#img2').attr('src', (value.materialPhotos[1].picUrl));
+                                            $('#img3').attr('src', (value.materialPhotos[2].picUrl));
+                                        }
+                                    });
+                                }else{
+                                    close()
+                                    popup({type:'tip',msg:"没有"+text+"的记录",delay:1500,bg:false});
+                                }
+                            }
+                        });
+                    }
+                    count=0;
+                }
+
+            });
+        } else {
+            popup({
+                type: 'tip',
+                msg: "该语种未开放!",
+                delay: 1200,
+                bg: true
+            });
+            $("#text").val("");
+            //jq对象转js对象
+            $('#textarea-input').get(0).style.border = "rgb(233, 233, 238) 1px solid";
+            $('#quit').html("");
+            $('#textarea-output').text("");
+        }
+    }
+        //下拉更新
+        function cl_most(){
+			//输入文本框的值
+			let text = $("#text").val();
+			//显示条数
+			let limit=6;
+			page++;
+			//不同下拉列表触发的函数判断
+			if($('#span-sel').attr("value") == 'cn-en'){
+				$.ajax({
+				    url: 'http://112.124.19.158:8091/api/frontdesk/material_translation/chinese?' +"chinese=" + text+"&limit="+limit+"&page="+page,
+				    type: 'get',
+				    data: $('#input').serialize(), //表单序列化
+				    success: function (data) {
+                        //判断是否到达页码底部
+                        if((data.count<limit)&&page==1){
+                            //标题
+                            let p="<p style='color:#333333;text-align:left;font-weight:700;'></p>";
+                            $("#quit").append(p);
+                            //遍历数组元素
+                            $.each(data.data, function (key, value) {
+                                $("#button").remove();
+                                let html=null;
+                                //显示图片
+                                if (value.materialPhotos.length == 0) {
+                                    //附加内容
+                                    html="<p id='p_sentence_chinese' style='font-family: '黑体';color:#666666;font-size: 16.2px;'>"+num+'、'+value.chinese+"</p>"
+                                        +"<p id='p_sentence_english' style='margin-bottom:8%;color:#666666;font-size: 13.2px;'>"+value.english+"</p>";
+                                    $("#quit").append(html);
+                                }else if(value.materialPhotos.length == 1){
+                                    //附加内容
+                                    $("#quit").append("<p id='p_sentence_chinese'>"+num+'、'+value.chinese+"</p>");
+                                    $("#quit").append("<p id='p_sentence_english'>"+value.english+"</p>");
+                                    $("#quit").append("<img id=img_"+num+" style='height:154px;border-radius:4px'/>");
+                                    //显示图片
+                                    $(('#img_'+num)).attr('src', (value.materialPhotos[0].picUrl));
+                                }else if (value.materialPhotos.length == 2){
+                                    //附加内容
+                                    $("#quit").append("<p id='p_sentence_chinese'>"+num+'、'+value.chinese+"</p>");
+                                    $("#quit").append("<p id='p_sentence_english'>"+value.english+"</p>");
+                                    $("#quit").append("<img id=img_"+num+" style='height:154px;border-radius:4px'/>");
+                                    $("#quit").append("<img id=img2_"+num+" style='height:154px;border-radius:4px'/>");
+                                    //显示图片
+                                    $(('#img_'+num)).attr('src', (value.materialPhotos[0].picUrl));
+                                    $(('#img2_'+num)).attr('src', (value.materialPhotos[1].picUrl));
+                                }else {
+                                    //附加内容
+                                    $("#quit").append("<p id='p_sentence_chinese'>"+num+'、'+value.chinese+"</p>");
+                                    $("#quit").append("<p id='p_sentence_english'>"+value.english+"</p>");
+                                    $("#quit").append("<img id=img_"+num+" style='height:154px;border-radius:4px'/>");
+                                    $("#quit").append("<img id=img2_"+num+" style='height:154px;border-radius:4px'/>");
+                                    $("#quit").append("<img id=img3_"+num+" style='height:154px;border-radius:4px'/>");
+                                    //显示图片
+                                    $(('#img_'+num)).attr('src', (value.materialPhotos[0].picUrl));
+                                    $(('#img2_'+num)).attr('src', (value.materialPhotos[1].picUrl));
+                                    $(('#img2_'+num)).attr('src', (value.materialPhotos[2].picUrl));
+                                }
+                                num++;
+                            });
+                            $("#quit").append("<div id='button' style='margin-left:-1.5em;margin-bottom:1.5em;text-align:center'><button id='most' onclick='cl_most()' style=\"width:16px;height:16px;background:url('images/折叠3.png') no-repeat center;border:0;outline:0\"></button></div>")
+
+                        }else if(page>(data.count/limit)+1||page*limit==2*data.count){
+                            popup({
+                                type: 'error',
+                                msg: "暂无相关记录",
+                                delay: 1200,
+                                bg:false
+                            });
+                            return false;
+                        }else{
+                            //标题
+                            let p="<p style='color:#333333;text-align:left;font-weight:700;'></p>";
+                            $("#quit").append(p);
+                            //遍历数组元素
+                            $.each(data.data, function (key, value) {
+                                $("#button").remove();
+                                console.log(value)
+                                let html=null;
+                                //显示图片
+                                if (value.materialPhotos.length == 0) {
+                                    //附加内容
+                                    html="<p id='p_sentence_chinese' style='font-family: '黑体';color:#666666;font-size: 16.2px;'>"+num+'、'+value.chinese+"</p>"
+                                        +"<p id='p_sentence_english' style='margin-bottom:8%;color:#666666;font-size: 13.2px;'>"+value.english+"</p>";
+                                    $("#quit").append(html);
+                                }else if(value.materialPhotos.length == 1){
+                                    //附加内容
+                                    $("#quit").append("<p id='p_sentence_chinese'>"+num+'、'+value.chinese+"</p>");
+                                    $("#quit").append("<p id='p_sentence_english'>"+value.english+"</p>");
+                                    $("#quit").append("<img id=img_"+num+" style='height:154px;border-radius:4px'/>");
+                                    //显示图片
+                                    $(('#img_'+num)).attr('src', (value.materialPhotos[0].picUrl));
+                                }else if (value.materialPhotos.length == 2){
+                                    //附加内容
+                                    $("#quit").append("<p id='p_sentence_chinese'>"+num+'、'+value.chinese+"</p>");
+                                    $("#quit").append("<p id='p_sentence_english'>"+value.english+"</p>");
+                                    $("#quit").append("<img id=img_"+num+" style='height:154px;border-radius:4px'/>");
+                                    $("#quit").append("<img id=img2_"+num+" style='height:154px;border-radius:4px'/>");
+                                    //显示图片
+                                    $(('#img_'+num)).attr('src', (value.materialPhotos[0].picUrl));
+                                    $(('#img2_'+num)).attr('src', (value.materialPhotos[1].picUrl));
+                                }else {
+                                    //附加内容
+                                    $("#quit").append("<p id='p_sentence_chinese'>"+num+'、'+value.chinese+"</p>");
+                                    $("#quit").append("<p id='p_sentence_english'>"+value.english+"</p>");
+                                    $("#quit").append("<img id=img_"+num+" style='height:154px;border-radius:4px'/>");
+                                    $("#quit").append("<img id=img2_"+num+" style='height:154px;border-radius:4px'/>");
+                                    $("#quit").append("<img id=img3_"+num+" style='height:154px;border-radius:4px'/>");
+                                    //显示图片
+                                    $(('#img_'+num)).attr('src', (value.materialPhotos[0].picUrl));
+                                    $(('#img2_'+num)).attr('src', (value.materialPhotos[1].picUrl));
+                                    $(('#img2_'+num)).attr('src', (value.materialPhotos[2].picUrl));
+                                }
+
+                                num++;
+                            });
+                            $("#quit").append("<div id='button' style='margin-left:-1.5em;margin-bottom:1.5em;text-align:center'><button id='most' onclick='cl_most()' style=\"width:16px;height:16px;background:url('images/折叠3.png') no-repeat center;border:0;outline:0\"></button></div>")
+                        }
+
+				    }
+				});
+			}else{
+				$.ajax({
+				    url: 'http://112.124.19.158:8091/api/frontdesk/material_translation/english?' +"english=" + text+"&limit="+limit+"&page="+page,
+				    type: 'get',
+				    data: $('#input').serialize(), //表单序列化
+				    success: function (data) {
+                        //判断是否到达页码底部
+                        if((data.count<limit)&&page==1){
+                            //标题
+                            let p="<p style='color:#333333;text-align:left;font-weight:700;'></p>";
+                            $("#quit").append(p);
+                            //遍历数组元素
+                            $.each(data.data, function (key, value) {
+                                console.log(value)
+                                $("#button").remove();
+                                let html=null;
+                                //显示图片
+                                if (value.materialPhotos.length == 0) {
+                                    //附加内容
+                                    html="<p id='p_sentence_chinese' style='font-family: '黑体';color:#666666;font-size: 16.2px;'>"+num+'、'+value.english+"</p>"
+                                        +"<p id='p_sentence_english' style='margin-bottom:8%;color:#666666;font-size: 13.2px;'>"+value.chinese+"</p>";
+                                    $("#quit").append(html);
+                                }else if(value.materialPhotos.length == 1){
+                                    //附加内容
+                                    $("#quit").append("<p id='p_sentence_chinese'>"+num+'、'+value.english+"</p>");
+                                    $("#quit").append("<p id='p_sentence_english'>"+value.chinese+"</p>");
+                                    $("#quit").append("<img id=img_"+num+" style='height:154px;border-radius:4px'/>");
+                                    //显示图片
+                                    $(('#img_'+num)).attr('src', (value.materialPhotos[0].picUrl));
+                                }else if (value.materialPhotos.length == 2){
+                                    //附加内容
+                                    $("#quit").append("<p id='p_sentence_chinese'>"+num+'、'+value.english+"</p>");
+                                    $("#quit").append("<p id='p_sentence_english'>"+value.chinese+"</p>");
+                                    $("#quit").append("<img id=img_"+num+" style='height:154px;border-radius:4px'/>");
+                                    $("#quit").append("<img id=img2_"+num+" style='height:154px;border-radius:4px'/>");
+                                    //显示图片
+                                    $(('#img_'+num)).attr('src', (value.materialPhotos[0].picUrl));
+                                    $(('#img2_'+num)).attr('src', (value.materialPhotos[1].picUrl));
+                                }else {
+                                    //附加内容
+                                    $("#quit").append("<p id='p_sentence_chinese'>"+num+'、'+value.english+"</p>");
+                                    $("#quit").append("<p id='p_sentence_english'>"+value.chinese+"</p>");
+                                    $("#quit").append("<img id=img_"+num+" style='height:154px;border-radius:4px'/>");
+                                    $("#quit").append("<img id=img2_"+num+" style='height:154px;border-radius:4px'/>");
+                                    $("#quit").append("<img id=img3_"+num+" style='height:154px;border-radius:4px'/>");
+                                    //显示图片
+                                    $(('#img_'+num)).attr('src', (value.materialPhotos[0].picUrl));
+                                    $(('#img2_'+num)).attr('src', (value.materialPhotos[1].picUrl));
+                                    $(('#img2_'+num)).attr('src', (value.materialPhotos[2].picUrl));
+                                }
+                                num++;
+                            });
+                            $("#quit").append("<div id='button' style='margin-left:-1.5em;margin-bottom:1.5em;text-align:center'><button id='most' onclick='cl_most()' style=\"width:16px;height:16px;background:url('images/折叠3.png') no-repeat center;border:0;outline:0\"></button></div>")
+                        }else if(page>(data.count/limit)+1||page*limit==2*data.count){
+                            popup({
+                                type: 'error',
+                                msg: "暂无相关记录",
+                                delay: 1200,
+                                bg:false
+                            });
+                            return false;
+                        }else{
+                            //标题
+                            console.log(value)
+                            let p="<p style='color:#333333;text-align:left;font-weight:700;'></p>";
+                            $("#quit").append(p);
+                            //遍历数组元素
+                            $.each(data.data, function (key, value) {
+                                $("#button").remove();
+                                let html=null;
+                                console.log(value)
+                                //显示图片
+                                if (value.materialPhotos.length == 0) {
+                                    //附加内容
+                                    html="<p id='p_sentence_chinese' style='font-family: '黑体';color:#666666;font-size: 16.2px;'>"+num+'、'+value.english+"</p>"
+                                        +"<p id='p_sentence_english' style='margin-bottom:8%;color:#666666;font-size: 13.2px;'>"+value.chinese+"</p>";
+                                    $("#quit").append(html);
+                                }else if(value.materialPhotos.length == 1){
+                                    //附加内容
+                                    $("#quit").append("<p id='p_sentence_chinese'>"+num+'、'+value.english+"</p>");
+                                    $("#quit").append("<p id='p_sentence_english'>"+value.chinese+"</p>");
+                                    $("#quit").append("<img id=img_"+num+" style='height:154px;border-radius:4px'/>");
+                                    //显示图片
+                                    $(('#img_'+num)).attr('src', (value.materialPhotos[0].picUrl));
+                                }else if (value.materialPhotos.length == 2){
+                                    //附加内容
+                                    $("#quit").append("<p id='p_sentence_chinese'>"+num+'、'+value.english+"</p>");
+                                    $("#quit").append("<p id='p_sentence_english'>"+value.chinese+"</p>");
+                                    $("#quit").append("<img id=img_"+num+" style='height:154px;border-radius:4px'/>");
+                                    $("#quit").append("<img id=img2_"+num+" style='height:154px;border-radius:4px'/>");
+                                    //显示图片
+                                    $(('#img_'+num)).attr('src', (value.materialPhotos[0].picUrl));
+                                    $(('#img2_'+num)).attr('src', (value.materialPhotos[1].picUrl));
+                                }else {
+                                    //附加内容
+                                    $("#quit").append("<p id='p_sentence_chinese'>"+num+'、'+value.english+"</p>");
+                                    $("#quit").append("<p id='p_sentence_english'>"+value.chinese+"</p>");
+                                    $("#quit").append("<img id=img_"+num+" style='height:154px;border-radius:4px'/>");
+                                    $("#quit").append("<img id=img2_"+num+" style='height:154px;border-radius:4px'/>");
+                                    $("#quit").append("<img id=img3_"+num+" style='height:154px;border-radius:4px'/>");
+                                    //显示图片
+                                    $(('#img_'+num)).attr('src', (value.materialPhotos[0].picUrl));
+                                    $(('#img2_'+num)).attr('src', (value.materialPhotos[1].picUrl));
+                                    $(('#img2_'+num)).attr('src', (value.materialPhotos[2].picUrl));
+                                }
+                                num++;
+                            });
+                            $("#quit").append("<div id='button' style='margin-left:-1.5em;margin-bottom:1.5em;text-align:center'><button id='most' onclick='cl_most()' style=\"width:16px;height:16px;background:url('images/折叠3.png') no-repeat center;border:0;outline:0\"></button></div>")
+                        }
+
+				    }
+				});
+			}
+        }
+
+</script>
+<script src="js/zepto.min.js"></script>
+<script type="text/javascript" src="js/dialog.min.js"></script>
+</html>

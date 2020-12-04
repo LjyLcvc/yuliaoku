@@ -1,5 +1,8 @@
 package com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.util.string;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class MyStringUtil {
 
     /**
@@ -11,5 +14,19 @@ public class MyStringUtil {
      */
     public static String trimBeginEndAndRetainOneSpaceInMiddle(String s){
         return s.trim().replaceAll("\\s{1,}", " ");
+    }
+
+
+    /**
+     * 过滤特殊字符，并去掉空格
+     * @param str
+     * @return
+     */
+    public static String stringFilterOfLetterNumber(String str){
+        //String regEx="[`~!@#$%^&*()+=|{}':;',\\[\\].<>/?~！@#￥%……&*（）——+|{}【】‘；：”“’。，、？]";
+        String regEx ="[^a-zA-Z0-9]";//只允许字母和数字
+        Pattern p = Pattern.compile(regEx);
+        Matcher m = p.matcher(str);
+        return m.replaceAll("").trim();
     }
 }

@@ -23,8 +23,8 @@
     </select>
 
    <insert id="save"  useGeneratedKeys="true" keyProperty="id">
-          insert into material(id,materialTypeId,chinese,english,spanish)
-          values(null,#{materialType.id},#{chinese},#{english},#{spanish})
+          insert into material(id,materialTypeId,chinese,english,spanish,audit,auditorId,auditTime,removeStatus)
+          values(null,#{materialType.id},#{chinese},#{english},#{spanish},#{audit},#{auditor.username},#{auditTime},0)
     </insert>
 
     <insert id="saves">
@@ -50,6 +50,10 @@
             <if test="chinese!=null and chinese.length()>0">chinese=#{chinese},</if>
             <if test="english!=null and english.length()>0">english=#{english},</if>
             <if test="spanish!=null and spanish.length()>0">spanish=#{spanish},</if>
+            <if test="audit!=null">audit=#{audit},</if>
+            <if test="auditor!=null and auditor.username!=null">auditorId=#{auditor.username},</if>
+            <if test="auditTime!=null">auditTime=#{auditTime},</if>
+            <if test="removeStatus!=null">removeStatus=#{removeStatus},</if>
         </set>
         where id=#{id}
     </update>
@@ -96,6 +100,9 @@
     <sql id="queryWhere">
         <if test="objectQuery!=null">
             <where>
+                <if test="objectQuery.removeStatus!=null">
+                    and material.removeStatus=#{objectQuery.removeStatus}
+                </if>
                 <if test="objectQuery.materialType!=null and objectQuery.materialType.id!=null">
                     and material.materialTypeId=#{objectQuery.materialType.id}
                 </if>
@@ -121,6 +128,36 @@
 
 
     <!--==================================定制查询============================-->
+
+    <update id="updateOfRemoves">
+        update material set removeStatus=#{removeStatus} where 1=0
+        <if test="array != null and array.length> 0">
+            OR id in
+            <foreach item="item" collection="array" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </update>
+
+    <update id="updatesOfAudit" >
+        update material set audit=#{audit},auditorId=#{auditorId},auditTime=#{auditTime} where 1=0
+        <if test="ids != null and ids.length> 0">
+            OR id in
+            <foreach item="item" collection="ids" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </update>
+
+    <update id="updatesOfMaterialType">
+        update material set materialTypeId=#{materialTypeId} where 1=0
+        <if test="array != null and array.length> 0">
+            OR id in
+            <foreach item="item" collection="array" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </update>
 
     <select id="queryForTranslation" resultMap="material">
         select material.* from material
@@ -234,6 +271,8 @@
     <select id="getMaterialPhotos"  resultType="MaterialPhoto">
         select * from material_photo where meterialId=#{meterialId}
     </select>
+
+
 
     <delete id="deleteMaterialPhotosByMaterial">
         delete from material_photo where meterialId=#{meterialId}

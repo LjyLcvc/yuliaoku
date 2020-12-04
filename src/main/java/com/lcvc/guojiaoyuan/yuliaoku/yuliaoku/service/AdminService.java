@@ -3,14 +3,14 @@ package com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.service;
 
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.dao.AdminDao;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.dao.MaterialDao;
-import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.dao.MaterialEnglishHistoryDao;
+import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.dao.MaterialHistoryDao;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.dao.MaterialTypeDao;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.Admin;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.base.PageObject;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.exception.MyServiceException;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.exception.MyWebException;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.query.AdminQuery;
-import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.query.MaterialEnglishHistoryQuery;
+import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model.query.MaterialHistoryQuery;
 import com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.util.SHA;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,7 +35,7 @@ public class AdminService {
     @Autowired
     private MaterialDao materialDao;
     @Autowired
-    private MaterialEnglishHistoryDao materialEnglishHistoryDao;
+    private MaterialHistoryDao materialHistoryDao;
 
     /**
      * 判断是否是超级管理员
@@ -137,16 +137,16 @@ public class AdminService {
                     throw new MyServiceException("删除失败：不允许删除自己的账户");
                 }
                 //获取被删除账户是否有物料提议记录，如果有不允许删除
-                MaterialEnglishHistoryQuery materialEnglishHistoryQuery=new MaterialEnglishHistoryQuery();
+                MaterialHistoryQuery materialEnglishHistoryQuery=new MaterialHistoryQuery();
                 materialEnglishHistoryQuery.setOperator(admin);
-                int numberOfOperator=materialEnglishHistoryDao.querySize(materialEnglishHistoryQuery);//获取要删除的记录
+                int numberOfOperator= materialHistoryDao.querySize(materialEnglishHistoryQuery);//获取要删除的记录
                 if(numberOfOperator>0){
                     throw new MyServiceException("删除失败：账户"+username+"发布有"+numberOfOperator+"个提议");
                 }
                 //获取被删除账户是否有审核物料提议的记录，如果有不允许删除
-                materialEnglishHistoryQuery=new MaterialEnglishHistoryQuery();
+                materialEnglishHistoryQuery=new MaterialHistoryQuery();
                 materialEnglishHistoryQuery.setAuditor(admin);
-                int numberOfAudit=materialEnglishHistoryDao.querySize(materialEnglishHistoryQuery);//获取要删除的记录
+                int numberOfAudit= materialHistoryDao.querySize(materialEnglishHistoryQuery);//获取要删除的记录
                 if(numberOfAudit>0){
                     throw new MyServiceException("删除失败：账户"+username+"审核过"+numberOfAudit+"个提议");
                 }

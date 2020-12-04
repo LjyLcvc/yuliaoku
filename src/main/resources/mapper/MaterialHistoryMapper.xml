@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <!-- 指明这个映射文件adminMapper.xml的逻辑路径,如果与接口建立映射，那么逻辑路径应该与接口的物理路径一致-->
-<mapper namespace="com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.dao.MaterialEnglishHistoryDao">
+<mapper namespace="com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.dao.MaterialHistoryDao">
 
     <!--==================================基本查询============================-->
 
     <!--自定义返回的类型-->
-    <resultMap id="materialEnglishHistory" type="MaterialEnglishHistory">
+    <resultMap id="materialHistory" type="MaterialHistory">
         <!--定义主键，否则可能会与其他表的id冲突，导致无法获取值-->
         <id  property="id" column="id" javaType="java.lang.Integer"/>
         <association property="material" javaType="Material" column="materialId" select="com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.dao.MaterialDao.get">
@@ -17,21 +17,23 @@
         </association>
     </resultMap>
 
-    <select id="get"  resultMap="materialEnglishHistory">
-        select * from material_english_history where id=#{id}
+    <select id="get"  resultMap="materialHistory">
+        select * from material_history where id=#{id}
     </select>
 
    <insert id="save"  useGeneratedKeys="true" keyProperty="id">
-          insert into material_english_history(id,materialId,operatorId,english,createTime,audit,auditorId,auditTime)
-          values(null,#{material.id},#{operator.username},#{english},now(),#{audit},#{auditor.username},#{auditTime})
+          insert into material_history(id,materialId,operatorId,historyType,chinese,english,spanish,createTime,audit,auditorId,auditTime)
+          values(null,#{material.id},#{operator.username},#{historyType},#{chinese},#{english},#{spanish},now(),#{audit},#{auditor.username},#{auditTime})
     </insert>
 
-    <update id="update" parameterType="MaterialEnglishHistory">
-        update material_english_history
+    <update id="update" parameterType="MaterialHistory">
+        update material_history
         <!-- 使用set标签可以将动态的配置SET 关键字，和剔除追加到条件末尾的任何不相关的逗号。 -->
         <set>
             <if test="material!=null and material.id!=null">materialId=#{material.id},</if>
+            <if test="chinese!=null and chinese.length()>0">chinese=#{chinese},</if>
             <if test="english!=null and english.length()>0">english=#{english},</if>
+            <if test="spanish!=null and spanish.length()>0">spanish=#{spanish},</if>
             <if test="audit!=null">audit=#{audit},</if>
             <if test="auditor!=null and auditor.username!=null">auditorId=#{auditor.username},</if>
             <if test="auditTime!=null">auditTime=#{auditTime},</if>
@@ -41,11 +43,11 @@
 
 
     <delete id="delete" >
-        delete from material_english_history where id=#{id}
+        delete from material_history where id=#{id}
     </delete>
 
     <delete id="deletes" >
-        delete from material_english_history where 1=0
+        delete from material_history where 1=0
         <if test="array != null and array.length> 0">
             OR id in
             <foreach item="item" collection="array" open="(" separator="," close=")">
@@ -55,29 +57,29 @@
     </delete>
 
     <delete id="deleteObjects" >
-        delete from material_english_history where id in
+        delete from material_history where id in
         <foreach item="item" collection="collection" open="(" separator="," close=")">
             #{item.id}
         </foreach>
     </delete>
 
     <select id="total"  resultType="Integer">
-        select count(1) from material_english_history
+        select count(1) from material_history
     </select>
 
-    <select id="readAll" resultMap="materialEnglishHistory">
-        select * from material_english_history order by createTime desc
+    <select id="readAll" resultMap="materialHistory">
+        select * from material_history order by createTime desc
     </select>
 
-    <select id="query" resultMap="materialEnglishHistory">
-        select material_english_history.* from material_english_history
+    <select id="query" resultMap="materialHistory">
+        select material_history.* from material_history
         <include refid="queryWhere"></include>
-        order by material_english_history.createTime desc limit #{offset},#{length}
+        order by material_history.createTime desc limit #{offset},#{length}
     </select>
 
     <select id="querySize" resultType="Integer">
         select count(1) from (
-        select material_english_history.id from material_english_history
+        select material_history.id from material_history
         <include refid="queryWhere"></include>
         ) u
     </select>
@@ -85,26 +87,45 @@
     <!--统一查询的条件，方便用于分页等查询，这里提供给query和querySize调用-->
     <sql id="queryWhere">
         <if test="objectQuery!=null">
+            <if test="objectQuery.material!=null">
+                left join material on material.id=material_history.materialId
+            </if>
             <where>
+                <if test="objectQuery.material.removeStatus!=null">
+                   and  material.removeStatus=#{objectQuery.material.removeStatus}
+                </if>
                 <if test="objectQuery.id!=null">
-                    and material_english_history.id=#{objectQuery.id}
+                    and material_history.id=#{objectQuery.id}
+                </if>
+                <if test="historyType!=null">
+                    and material_history.historyType=#{objectQuery.historyType}
+                </if>
+                <if test="objectQuery.chinese!=null and objectQuery.chinese.length()>0">
+                    <!-- bind，重新定义一个变量，可用于模糊查询等，并且可以直接覆盖原变量 -->
+                    <bind name="chinese" value="'%' + _parameter.objectQuery.chinese + '%'" />
+                    and material_history.chinese like #{chinese}
                 </if>
                 <if test="objectQuery.english!=null and objectQuery.english.length()>0">
                     <!-- bind，重新定义一个变量，可用于模糊查询等，并且可以直接覆盖原变量 -->
                     <bind name="english" value="'%' + _parameter.objectQuery.english + '%'" />
-                    and material_english_history.english like #{english}
+                    and material_history.english like #{english}
+                </if>
+                <if test="objectQuery.spanish!=null and objectQuery.spanish.length()>0">
+                    <!-- bind，重新定义一个变量，可用于模糊查询等，并且可以直接覆盖原变量 -->
+                    <bind name="spanish" value="'%' + _parameter.objectQuery.spanish + '%'" />
+                    and material_history.spanish like #{spanish}
                 </if>
                 <if test="objectQuery.material!=null and objectQuery.material.id!=null">
-                    and material_english_history.materialId=#{objectQuery.material.id}
+                    and material_history.materialId=#{objectQuery.material.id}
                 </if>
                 <if test="objectQuery.operator!=null and objectQuery.operator.username!=null">
-                    and material_english_history.operatorId=#{objectQuery.material.username}
+                    and material_history.operatorId=#{objectQuery.material.username}
                 </if>
                 <if test="objectQuery.auditor!=null and objectQuery.auditor.username!=null">
-                    and material_english_history.auditorId=#{objectQuery.auditor.username}
+                    and material_history.auditorId=#{objectQuery.auditor.username}
                 </if>
                 <if test="objectQuery.audit!=null">
-                    and material_english_history.audit=#{objectQuery.audit}
+                    and material_history.audit=#{objectQuery.audit}
                 </if>
             </where>
         </if>
@@ -117,7 +138,17 @@
     </delete>
 
     <update id="updateOfAuditRefuse" >
-        update material_english_history set audit=false,auditorId=#{auditorId},auditTime=#{auditTime} where 1=0
+        update material_history set audit=false,auditorId=#{auditorId},auditTime=#{auditTime} where 1=0
+        <if test="ids != null and ids.length> 0">
+            OR id in
+            <foreach item="item" collection="ids" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </update>
+
+    <update id="updateOfAudit" >
+        update material_history set audit=#{audit},auditorId=#{auditorId},auditTime=#{auditTime} where 1=0
         <if test="ids != null and ids.length> 0">
             OR id in
             <foreach item="item" collection="ids" open="(" separator="," close=")">

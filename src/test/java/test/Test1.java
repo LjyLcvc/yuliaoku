@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 public class Test1 {
 
+
     @Test
     public void test1(){
         String s="adf-adf";
@@ -16,4 +17,5 @@ public class Test1 {
         String message=" hello,a b    c    d ";
         System.out.println(message.trim().replaceAll("\\s{1,}", " "));
     }
+
 }

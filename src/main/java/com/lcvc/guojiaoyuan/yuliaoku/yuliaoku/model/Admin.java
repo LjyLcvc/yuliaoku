@@ -3,6 +3,7 @@ package com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.validator.constraints.Length;
 
+import javax.validation.constraints.Pattern;
 import java.util.Date;
 import java.util.Objects;
 
@@ -12,6 +13,7 @@ import java.util.Objects;
 public class Admin implements java.io.Serializable{
 
     @Length(min = 2, max = 20, message = "账户名长度必须在 {min} - {max} 之间")
+    @Pattern(regexp = "^[A-Za-z0-9]+$", message = "账户名只能用字母和数字")
     private String username;
     @Length(min = 6, max = 20, message = "原密码长度必须在 {min} - {max} 之间")
     private String password;

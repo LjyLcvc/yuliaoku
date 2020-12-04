@@ -3,6 +3,7 @@ package com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotNull;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -19,10 +20,14 @@ public class Material {
     private String english;//物料的英文名
     @Length(max = 200,message = "物资的西语长度不能超过 {max} ")
     private String spanish;//物料的西班牙语
+    private Boolean audit;//表示该表单是否审核通过,true表示通过，false表示不通过
+    private Admin auditor;//审计此次记录的人，如果是管理员自己编辑的词条则直接默认是审计
+    private Date auditTime;//审核的时间
+    private Boolean removeStatus;//逻辑删除，true表示被删除
 
     //非数据库字段
     private List<MaterialPhoto> materialPhotos;//物料对应的图片集合
-    private Integer materialEnglishHistoryNumber;//物料对应的提议数量
+    private Integer materialEnglishHistoryNumber;//物料对应的英语提议数量
 
 
     public Material() {
@@ -88,5 +93,35 @@ public class Material {
         this.materialEnglishHistoryNumber = materialEnglishHistoryNumber;
     }
 
+    public Boolean getAudit() {
+        return audit;
+    }
 
+    public void setAudit(Boolean audit) {
+        this.audit = audit;
+    }
+
+    public Admin getAuditor() {
+        return auditor;
+    }
+
+    public void setAuditor(Admin auditor) {
+        this.auditor = auditor;
+    }
+
+    public Date getAuditTime() {
+        return auditTime;
+    }
+
+    public void setAuditTime(Date auditTime) {
+        this.auditTime = auditTime;
+    }
+
+    public Boolean getRemoveStatus() {
+        return removeStatus;
+    }
+
+    public void setRemoveStatus(Boolean removeStatus) {
+        this.removeStatus = removeStatus;
+    }
 }

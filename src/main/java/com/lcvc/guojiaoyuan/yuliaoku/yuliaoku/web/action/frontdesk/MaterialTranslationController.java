@@ -44,6 +44,8 @@ public class MaterialTranslationController {
     public Map<String, Object> chinese(Integer page, Integer limit, @NotNull(message = "必须输入中文")String chinese, HttpServletRequest request){
         Map<String, Object> map=new HashMap<String, Object>();
         MaterialQuery materialQuery=new MaterialQuery();//创建查询条件
+        materialQuery.setAudit(true);
+        materialQuery.setRemoveStatus(false);
         materialQuery.setQueryType(1);
         materialQuery.setChinese(chinese);
         PageObject pageObject =materialService.queryForTranslation(page,limit,materialQuery,getBaseUrl(request));
@@ -64,6 +66,8 @@ public class MaterialTranslationController {
     public Map<String, Object> engLish(Integer page, Integer limit,@NotBlank(message = "必须输入英文")String english,HttpServletRequest request){
         Map<String, Object> map=new HashMap<String, Object>();
         MaterialQuery materialQuery=new MaterialQuery();//创建查询条件
+        materialQuery.setAudit(true);
+        materialQuery.setRemoveStatus(false);
         materialQuery.setQueryType(2);
         materialQuery.setEnglish(english);
         PageObject pageObject =materialService.queryForTranslation(page,limit,materialQuery,getBaseUrl(request));
@@ -83,6 +87,8 @@ public class MaterialTranslationController {
     public Map<String, Object> engLishToChinese(Integer page, Integer limit,@NotBlank(message = "必须输入西文")String spanish,HttpServletRequest request){
         Map<String, Object> map=new HashMap<String, Object>();
         MaterialQuery materialQuery=new MaterialQuery();//创建查询条件
+        materialQuery.setAudit(true);
+        materialQuery.setRemoveStatus(false);
         materialQuery.setQueryType(3);
         materialQuery.setSpanish(spanish);
         PageObject pageObject =materialService.queryForTranslation(page,limit,materialQuery,getBaseUrl(request));

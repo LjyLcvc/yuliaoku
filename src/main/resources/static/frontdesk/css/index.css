@@ -1,0 +1,561 @@
+html{
+background: rgb(250, 250, 252) no-repeat;
+
+}
+body{
+    width: 1300px;
+    height: 900px;
+    margin: 0px auto;
+
+}
+/* 头部 */
+header{
+    width: 100%;
+    height: 10%;
+    background-color: rgb(250, 250, 252);
+}
+
+li{
+    list-style: none;
+}
+
+#lcvc_logo img{
+    width: 153px;
+    margin-top: 50px;
+    margin-left: 20px;
+    float: left;
+}
+
+#motor img{
+    width: 121px;
+    height: 30px;
+    margin-top: 49px;
+    margin-left: 20px;
+    float: left;
+}
+
+#dragon img{
+    width: 149px;
+    margin-top: 47px;
+    margin-left: 15px; 
+    float: left;
+}
+
+#dict {
+    width: 100px;
+    float: right;
+    margin-right: 100px;
+    margin-top: 54px;
+    font-family:  '微软雅黑' ;
+    font-size: 18px;
+}
+
+/* 头部 登录 */
+#enter a{
+    float: right;
+    margin-top:60px;
+    margin-right: -120px;
+    text-decoration: none;
+    color: grey;
+    font-size: 12px;
+}
+
+/* 中部 */
+section{
+    width: 100%;
+    /*不用设高度,随内容变化*/
+    border-top: 1px solid gainsboro;
+    border-bottom: 1px solid gainsboro;
+    background-color: rgb(250, 250, 252);
+    display:inline-block;
+}
+
+/* 中部 上  字体互换翻译*/
+#language-menu {
+    width: 588px;
+    height: 120px;
+    display: none;
+    position: absolute;
+    z-index: 99999999;
+    margin-top: 28px;
+    margin-left: 58px;
+    border-radius: 5px;
+    -moz-box-shadow:1px 1px 8px #DED1D0; -webkit-box-shadow:1px 1px 8px #DED1D0; box-shadow:1px 1px 8px #DED1D0;
+    background-color: rgb(255, 255, 255);
+}
+
+.close{
+     position: relative;
+     left: 280px;
+     top: 4px;
+}
+
+#language-btn {
+    width: 580px;
+    height: 50px;
+    border: 1px solid #e5e5e5;
+    border-radius: 5px;
+    position: relative;
+    top: 20px;
+    left: 58px;
+}
+
+
+
+#language-btn #languge-sel{
+    position: relative;
+    left: 40px;
+    top: 15px;
+    font-size: 16px;
+}
+
+#language-btn #languge-sel img{
+    width: 22px;
+    height: 22px;
+    float: right;
+    position: relative;
+    top: 4px;
+    left: -60px;
+}
+
+.language {
+    border-radius: 5px;
+    width: 110px;
+    height:30px;
+    margin: 10px 16px 0 16px;
+    padding: 2px;
+    line-height:30px;
+    font-size: 16px;
+    float: left;
+    text-align: center;
+}
+
+.language2 {
+    border-radius: 5px;
+    width: 110px;
+    height:30px;
+    margin: 10px 16px 0 16px;
+    padding: 2px;
+    line-height:30px;
+    font-size: 16px;
+    float: left;
+    text-align: center;
+}
+
+
+
+.language:hover {
+    background-color: rgba(253, 55, 55, 0.7);
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#Tran{
+    text-decoration: none;
+    background-color: #e60111;
+    color: rgb(255, 255, 255);
+    border-radius: 4px;
+    float: right;
+    padding: 14px 30px;
+    margin-right:480px;
+    margin-top: -32px;
+    width: 70px;
+    text-align: center;
+}
+/* 中部 中左 字体输入 */
+#textarea-input{
+    width: 600px;
+    height: 203px;
+    position: relative;
+    top: 20px;
+    left: 58px; 
+    border: rgb(233, 233, 238) 1px solid;
+    float: left;
+    border-radius: 4px;
+}
+
+input{
+    outline: none;
+}
+
+textarea{
+    outline: none;
+    width: 560px;
+    height: 132px;
+    position: relative;
+    left: 14px;
+    top: 14px;
+    border: none;
+    background-color: rgb(250, 250, 252);
+    font-family: '微软雅黑';
+    font-size: 20px;
+}
+.icon-del{
+    background: url("../images/hebingxingzhuangx.png") no-repeat 5px;
+    background-size: 15px 15px;
+    width: 20px;
+    height: 20px;
+    padding-top:5.6%;
+    position: absolute;
+    right:4%;
+}
+.icon-del:hover{
+    cursor: pointer;
+}
+#icon-Micro img{
+    width: 20px;
+    height: 20px;
+    position: relative;
+    left: -24px;
+    top: 16px;
+}
+
+#icon-sound img{
+    width: 20px;
+    height: 20px;
+    position: relative;
+    top: -24px;
+    left: 10px;
+}
+
+#most:hover{
+    cursor: pointer;
+    animation-play-state: paused;
+}
+
+
+/* 中部  中右 字体翻译 */
+#textarea-output{
+    width: 600px;
+    height: 203px;
+    background-color: #eeeeee;
+    border: solid 1px rgb(233, 233, 238);
+    float: left;
+    position: relative;
+    top: 20px;
+    left: 58px;
+    border-radius: 4px;
+}
+
+figure img{
+    width: 20px;
+    height: 20px;
+    position: relative;
+    top: 156px;
+    left: -18px;
+}
+
+#textarea-output .text-dup img{
+    width: 20px;
+    height: 20px;
+    position: relative;
+    left: 520px;
+    bottom: -116px;
+}
+
+#textarea-output .text-share img{
+    width: 20px;
+    height: 20px;
+    position: relative;
+    right: -556px;
+    bottom: -76px;
+}
+
+/* 中部 右下  图片文字诠释区*/
+
+#textarea-info{
+    width: 600px;
+    /*不用设高度,随内容变化*/
+    border: solid 1px #eeeeee;
+    box-shadow: gray;
+    float: left;
+    margin-top: 50px;
+    margin-left: 58px;
+    border-radius: 4px;
+}
+
+/* 宣传图 */
+#prop img{
+    width: 490px;
+    float: right;
+    margin-top: 55px;
+    margin-right: 25px;
+}
+
+/* 底部 */
+footer{
+    width: 100%;
+    height: 10%;
+    background-color: rgb(250, 250, 252);
+    margin-top: -16px;
+}
+#east-w{
+    text-align: center;
+    position: relative;
+    top: 30px;
+    color: gray;
+}
+
+
+/* 登录页 */
+#LoginBox {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    padding-top: 100px;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.267);
+}
+
+.loginMenu {
+    background-color: rgb(255, 255, 255);
+    border-radius: 6px;
+    width:450px;
+
+    text-align: center;
+    position: relative;
+    margin: 0 auto;
+    display: block;
+    padding-top: 20px;
+}
+
+.BoxInput {
+    line-height:50px;
+}
+
+#close {
+    position: relative;
+    left: 400px;
+    top: 4px;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    background-color: rgb(146, 146, 146);
+    color: white;
+}
+
+#close:hover {
+    cursor: pointer;
+} 
+
+ #login:hover {
+    cursor: pointer;
+}
+
+#login:link {
+    animation: dh 5s;
+}
+
+.inputDiv {
+    margin: 10px auto;
+    border: 1px solid #999696;
+    border-radius: 2px;
+    width: 60%;
+    height: 20px;
+    position: relative;
+    left: -10px;
+}
+
+.inputDiv2 {
+    margin: 10px auto;
+    border: 1px solid #999696;
+    border-radius: 2px;
+    width: 60%;
+    height: 20px;
+    position: relative;
+    left: -10px;
+    top: -5px;
+}
+
+.inputDiv3 {
+    margin: 10px auto;
+    border: 1px solid #999696;
+    border-radius: 2px;
+    width: 40%;
+    height: 20px;
+    position: relative;
+    left: -68px;
+    top: -11px;
+}
+
+.inputDiv img {
+    border-right: solid 1px #999696;
+    width: 22px;
+    padding: 0 10px;
+    position: relative;
+    top: 6px;
+}
+
+.inputDiv input {
+    border: none;
+}
+
+.btn {
+    line-height:40px;
+    border-radius: 6px;
+    background-color: red;
+    width: 68%;
+    height:40px;
+    color: white;
+    position: relative;
+    left:72px;
+    top: -45px;
+}
+
+.btn:hover {
+    cursor: pointer;
+}
+.btn:active{
+    background-color: #a00909;
+}
+#Tran:hover{
+    cursor: pointer;
+    background: rgba(180,0,0,1);
+}
+
+#check {
+   /*margin: 0 0 0 10%;*/
+}
+
+#canvas {
+    width: 90px;
+    height: 38px;
+    position: relative;
+    left: 98px;
+    top: -45px;
+}
+
+
+.translation{
+    display: inline-block;
+    font-family: '黑体';
+    color: black;
+    font-size: 17px;
+    margin-bottom: -32px;
+}
+#tr_title{
+    height:18px;
+    color:red;
+    letter-spacing:0;
+    position: relative;
+    font-family: Arial;
+    border-bottom:2px solid red;
+
+}
+#tr_exp{
+    font-family: '黑体';
+    font-size: 16.3px;
+    padding-top: 1px;
+}
+/*下拉更新*/
+#most{
+    position: relative;
+    animation:remove_most 1.85s infinite ease;
+    -webkit-animation:remove_most 1.85s infinite ease;
+    -moz-animation:remove_most 1.85s infinite ease;
+    -o-animation:remove_most 1.85s infinite ease;
+    -ms-animation:remove_most 1.85s infinite ease;
+
+}
+@keyframes remove_most{
+    0%{}
+    100%{transform:translateY(22px);}
+}
+
+.input span{
+    border: 1px solid rgba(0,0,0,0.2);
+    padding: 10px;
+}
+.user input{
+    background: url("../images/xingming.png") no-repeat 3%;
+    background-size:25px 25px;
+    border: 0;
+    outline: none;
+    position: relative;
+}
+.pass input{
+    background: url("../images/mima备份 2.png") no-repeat 3%;
+    background-size: 25px 25px;
+    outline: none;
+    border: 0;
+}
+.code input{
+    background: url("../images/验证码.png") no-repeat 3.8%;
+    background-size: 25px 25px;
+    outline: none;
+    border: 0;
+
+}
+
+input[type='text']::-ms-clear{
+    display: none;
+}
+input[type='password']::-ms-reveal{
+    display: none;
+}
+
+
+.toast_user{
+    background: url("../images/dui.png") no-repeat 5px;
+    background-size: 15px 15px;
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    padding-top:6%;
+    display: none;
+}
+.toast_pass{
+    background:url("../images/hebingxingzhuangx.png") no-repeat 5px;
+    background-size: 15px 15px;
+    padding-left: 20px;
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    padding-top:6%;
+    display: none;
+}
+.toast_code{
+    background:url("../images/hebingxingzhuangx.png") no-repeat 5px;
+    background-size: 15px 15px;
+    padding-left: 20px;
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    padding-top:7%;
+    display: none;
+    right: 39px;
+}
+
+.check{
+    background: url("../images/显示.png") no-repeat;
+    width: 20px;
+    height: 20px;
+    background-size: 20px 20px;
+    position: absolute;
+    left:76%;
+    margin-top:3%;
+    cursor: pointer;
+}
+#img,#img2,#img3{
+    display:inline-block;
+    max-width:100%;
+    margin-right:30PX;
+    border: 1px solid #9e9c9c;
+}
+#p_sentence_chinese{
+    border-top: 1px dashed #ccc;
+    width: 95%;
+    padding-top:10px;
+    font-family:'黑体';
+    color:#666666;
+    font-size: 16.2px;
+}
+#p_sentence_english{
+margin-bottom:8%;
+color:#666666;
+font-size: 13.2px;
+}
