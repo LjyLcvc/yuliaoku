@@ -15,7 +15,7 @@ server:
 
 mybatis:
   mapper-locations: classpath*:mapper/*.xml #扫描mybatis的mapper.xml文件
-  type-aliases-package: com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.model #起别名，指向实体类的位置，可省略写mybatis的xml中的resultType的全路径，取代<typeAlias alias="Admin" type="com.ljy.maven_github_ssm.model.Admin"/>
+  type-aliases-package: com.lcvc.guojiaoyuan.yuliaoku.model #起别名，指向实体类的位置，可省略写mybatis的xml中的resultType的全路径，取代<typeAlias alias="Admin" type="com.ljy.maven_github_ssm.model.Admin"/>
 
 spring:
   devtools:

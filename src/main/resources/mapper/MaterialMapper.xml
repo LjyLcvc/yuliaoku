@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <!-- 指明这个映射文件adminMapper.xml的逻辑路径,如果与接口建立映射，那么逻辑路径应该与接口的物理路径一致-->
-<mapper namespace="com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.dao.MaterialDao">
+<mapper namespace="com.lcvc.guojiaoyuan.yuliaoku.dao.MaterialDao">
 
     <!--==================================基本查询============================-->
 
@@ -9,7 +9,7 @@
     <resultMap id="material" type="Material">
         <!--定义主键，否则可能会与其他表的id冲突，导致无法获取值-->
         <id  property="id" column="id" javaType="java.lang.Integer"/>
-        <association property="materialType" javaType="MaterialType" column="materialTypeId" select="com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.dao.MaterialTypeDao.getSimple">
+        <association property="materialType" javaType="MaterialType" column="materialTypeId" select="com.lcvc.guojiaoyuan.yuliaoku.dao.MaterialTypeDao.getSimple">
         </association>
     </resultMap>
 

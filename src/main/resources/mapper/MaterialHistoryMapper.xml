@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <!-- 指明这个映射文件adminMapper.xml的逻辑路径,如果与接口建立映射，那么逻辑路径应该与接口的物理路径一致-->
-<mapper namespace="com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.dao.MaterialHistoryDao">
+<mapper namespace="com.lcvc.guojiaoyuan.yuliaoku.dao.MaterialHistoryDao">
 
     <!--==================================基本查询============================-->
 
@@ -9,11 +9,11 @@
     <resultMap id="materialHistory" type="MaterialHistory">
         <!--定义主键，否则可能会与其他表的id冲突，导致无法获取值-->
         <id  property="id" column="id" javaType="java.lang.Integer"/>
-        <association property="material" javaType="Material" column="materialId" select="com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.dao.MaterialDao.get">
+        <association property="material" javaType="Material" column="materialId" select="com.lcvc.guojiaoyuan.yuliaoku.dao.MaterialDao.get">
         </association>
-        <association property="operator" javaType="Admin" column="operatorId" select="com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.dao.AdminDao.get">
+        <association property="operator" javaType="Admin" column="operatorId" select="com.lcvc.guojiaoyuan.yuliaoku.dao.AdminDao.get">
         </association>
-        <association property="auditor" javaType="Admin" column="auditorId" select="com.lcvc.guojiaoyuan.yuliaoku.yuliaoku.dao.AdminDao.get">
+        <association property="auditor" javaType="Admin" column="auditorId" select="com.lcvc.guojiaoyuan.yuliaoku.dao.AdminDao.get">
         </association>
     </resultMap>
 
@@ -97,7 +97,7 @@
                 <if test="objectQuery.id!=null">
                     and material_history.id=#{objectQuery.id}
                 </if>
-                <if test="historyType!=null">
+                <if test="objectQuery.historyType!=null">
                     and material_history.historyType=#{objectQuery.historyType}
                 </if>
                 <if test="objectQuery.chinese!=null and objectQuery.chinese.length()>0">
