@@ -205,6 +205,7 @@ public class MaterialHistoryService {
             materialHistory.setChinese(material.getChinese());//设置原来的内容
             materialHistory.setEnglish(material.getEnglish());//设置原来的内容
             materialHistory.setSpanish(material.getSpanish());//设置原来的内容
+            materialHistory.setHistoryType(historyType);
             //将此次修改的内容放入提议中
             if(historyType==1){//中文提议
                 materialHistory.setChinese(content);

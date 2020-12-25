@@ -6,9 +6,9 @@ import com.lcvc.guojiaoyuan.yuliaoku.model.base.Constant;
 import com.lcvc.guojiaoyuan.yuliaoku.model.base.JsonCode;
 import com.lcvc.guojiaoyuan.yuliaoku.service.AdminService;
 import net.sf.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -16,9 +16,14 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * 用户登陆拦截，用于拦截websocket的接口
+ * 说明：
+ * spring mvc的拦截器对websocket接口拦截无效，必须通过该接口来实现拦截
+ */
 public class LoginForAdminInterceptor extends HandlerInterceptorAdapter {
 
-    @Resource
+    @Autowired
     private AdminService adminService;
     //private static final String[] IGNORE_URI = {};//定义不拦截的资源
 

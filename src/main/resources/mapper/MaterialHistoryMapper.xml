@@ -26,6 +26,21 @@
           values(null,#{material.id},#{operator.username},#{historyType},#{chinese},#{english},#{spanish},now(),#{audit},#{auditor.username},#{auditTime})
     </insert>
 
+    <insert id="saves">
+        <choose>
+            <when test="list.size()>0">
+                insert into material_history(id,materialId,operatorId,historyType,chinese,english,spanish,createTime,audit,auditorId,auditTime) values
+                <foreach collection="list" item="item" index="index" separator=",">
+                    (null,#{item.material.id},#{item.operator.username},#{item.historyType},#{item.chinese},#{item.english},#{item.spanish},now(),#{item.audit},#{item.auditor.username},#{item.auditTime})
+                </foreach>
+            </when>
+            <otherwise>
+                <!--执行一个空的b语句，否则如果是空的代码会报错-->
+                select 0
+            </otherwise>
+        </choose>
+    </insert>
+
     <update id="update" parameterType="MaterialHistory">
         update material_history
         <!-- 使用set标签可以将动态的配置SET 关键字，和剔除追加到条件末尾的任何不相关的逗号。 -->

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>WebSocket简易聊天室</title>
+</head>
+<body>
+<h3>hello socket</h3>
+<p>【发送者】：<div><input id="userId" name="userId" type="text" value="10"></div>
+<p>【接受者】：<div><input id="toUserId" name="toUserId" type="text" value="20"></div>
+<p>【发送内容】：<div><input id="contentText" name="contentText" type="text" value="你好，**"></div>
+<p>【操作】:<div><button onclick="openSocket()">开启socket连接</button></div>
+<p>【操作】：<div><button onclick="sendMessage()">发送消息</button></div>
+
+<p>【操作】:<div><button onclick="closeSocket()">关闭socket连接</button></div>
+</body>
+<script>
+
+
+    var socket;
+    function openSocket() {
+        if(typeof(WebSocket) == "undefined") {
+            console.log("您的浏览器不支持WebSocket");
+        }else{
+            console.log("您的浏览器支持WebSocket");
+            //实现化WebSocket对象，指定要连接的服务器地址与端口  建立连接
+            var userId = document.getElementById('userId').value;//获取发送者id
+            var socketUrl="ws://127.0.0.1:8091/api/backstage/webSocket/"+userId;
+            //var socketUrl="ws://192.168.0.231:22599/webSocket/"+userId;
+            if(socket!=null){//如果原来存在socket连接
+                socket.close();//关闭原来的连接
+                socket=null;
+            }
+            socket = new WebSocket(socketUrl);//创建新的连接
+            //打开事件
+            socket.onopen = function() {
+                console.log("websocket已打开");
+                //socket.send("这是来自客户端的消息" + location.href + new Date());
+            };
+            //获得消息事件
+            socket.onmessage = function(msg) {
+                var serverMsg = "收到服务端信息：" + msg.data;
+                console.log(serverMsg);
+                //发现消息进入    开始处理前端触发逻辑
+            };
+            //关闭事件
+            socket.onclose = function() {
+                console.log("websocket已关闭");
+            };
+            //发生了错误事件
+            socket.onerror = function() {
+                console.log("websocket发生了错误");
+            }
+        }
+    }
+    function sendMessage() {
+        if(typeof(WebSocket) == "undefined") {
+            console.log("您的浏览器不支持WebSocket");
+        }else {
+            // console.log("您的浏览器支持WebSocket");
+            var toUserId = document.getElementById('toUserId').value;
+            var contentText = document.getElementById('contentText').value;
+            var msg = '{"toUserId":"'+toUserId+'","contentText":"'+contentText+'"}';
+            console.log(msg);
+            socket.send(msg);
+        }
+    }
+
+    function closeSocket(){
+        console.log("关闭socket");
+        socket.close();
+    }
+
+</script>
+</html>

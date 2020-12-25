@@ -42,9 +42,11 @@ public class MaterialHistoryManageController {
             materialHistoryQuery=new MaterialHistoryQuery();//创建查询条件
         }
         //加上被移除物资的条件
-        Material material=new Material();
-        material.setRemoveStatus(false);
-        materialHistoryQuery.setMaterial(material);
+        if(materialHistoryQuery.getMaterial()==null){
+            materialHistoryQuery.setMaterial(new Material());
+        }
+        materialHistoryQuery.getMaterial().setRemoveStatus(false);
+        //查询分页
         PageObject pageObject = materialHistoryService.query(page,limit,materialHistoryQuery);
         map.put(Constant.JSON_TOTAL,pageObject.getTotalRecords());
         map.put(Constant.JSON_DATA,pageObject.getList());

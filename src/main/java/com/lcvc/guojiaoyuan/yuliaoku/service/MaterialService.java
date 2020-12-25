@@ -414,7 +414,9 @@ public class MaterialService {
     /**
      * 导入电子表格
      * 1.导入的新词将导入系统中
+     * （1）如果是管理员则默认直接审核通过
      * 2.导入的新词也将作为提议存入系统中
+     * （1）如果是管理员则默认直接审核通过
      * @param inputStream
      * @param operator 操作的管理员
      * @return 返回成功导入的数量
@@ -445,6 +447,11 @@ public class MaterialService {
                 for(Material material:materials){
                     count.incrementAndGet();//计数增加
                     material.setMaterialType(materialType);//附上所属的物资类别
+                    if(operator.isSuperAdmin()) {//如果是管理员，则该物资默认已经审核
+                        material.setAuditor(operator);//审核者为自己
+                        material.setAudit(true);//审核通过
+                        material.setAuditTime(Calendar.getInstance().getTime());//审核时间
+                    }
                 }
                 materialDao.saves(materials);
                 for(Material material:materials){//将词库遍历为提议

@@ -27,12 +27,12 @@
           values(null,#{materialType.id},#{chinese},#{english},#{spanish},#{audit},#{auditor.username},#{auditTime},0)
     </insert>
 
-    <insert id="saves">
+    <insert id="saves" useGeneratedKeys="true" keyProperty="id">
         <choose>
             <when test="list.size()>0">
-                insert into material(id,materialTypeId,chinese,english,spanish) values
+                insert into material(id,materialTypeId,chinese,english,spanish,audit,auditorId,auditTime,removeStatus) values
                 <foreach collection="list" item="item" index="index" separator=",">
-                    (null,#{item.materialType.id},#{item.chinese},#{item.english},#{item.spanish})
+                    (null,#{item.materialType.id},#{item.chinese},#{item.english},#{item.spanish},#{item.audit},#{item.auditor.username},#{item.auditTime},0)
                 </foreach>
             </when>
             <otherwise>
@@ -131,9 +131,9 @@
 
     <update id="updateOfRemoves">
         update material set removeStatus=#{removeStatus} where 1=0
-        <if test="array != null and array.length> 0">
+        <if test="ids != null and ids.length> 0">
             OR id in
-            <foreach item="item" collection="array" open="(" separator="," close=")">
+            <foreach item="item" collection="ids" open="(" separator="," close=")">
                 #{item}
             </foreach>
         </if>
@@ -151,9 +151,9 @@
 
     <update id="updatesOfMaterialType">
         update material set materialTypeId=#{materialTypeId} where 1=0
-        <if test="array != null and array.length> 0">
+        <if test="ids != null and ids.length> 0">
             OR id in
-            <foreach item="item" collection="array" open="(" separator="," close=")">
+            <foreach item="item" collection="ids" open="(" separator="," close=")">
                 #{item}
             </foreach>
         </if>

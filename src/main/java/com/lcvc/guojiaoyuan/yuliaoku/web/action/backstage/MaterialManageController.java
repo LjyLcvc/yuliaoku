@@ -9,12 +9,12 @@ import com.lcvc.guojiaoyuan.yuliaoku.model.base.JsonCode;
 import com.lcvc.guojiaoyuan.yuliaoku.model.base.PageObject;
 import com.lcvc.guojiaoyuan.yuliaoku.model.exception.MyServiceException;
 import com.lcvc.guojiaoyuan.yuliaoku.model.exception.MyWebException;
+import com.lcvc.guojiaoyuan.yuliaoku.model.query.MaterialQuery;
 import com.lcvc.guojiaoyuan.yuliaoku.service.MaterialService;
 import com.lcvc.guojiaoyuan.yuliaoku.util.file.IoFile;
 import com.lcvc.guojiaoyuan.yuliaoku.util.file.MyFileOperator;
 import com.lcvc.guojiaoyuan.yuliaoku.util.file.MyFileUpload;
 import com.lcvc.guojiaoyuan.yuliaoku.util.opi.material.MaterialWriteForExcel;
-import com.lcvc.guojiaoyuan.yuliaoku.model.query.MaterialQuery;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -288,6 +288,7 @@ public class MaterialManageController {
     /**
      * 上传物资表格，并导入到项目中
      * @param file 要上传的excel
+     * @return 返回code:是否成功；JSON_DATA表示成功导入几条物料
      */
     @PostMapping("/manage/excel")
     public Map<String, Object> uploadExcel(MultipartFile file,HttpSession session) throws Exception{
@@ -351,6 +352,15 @@ public class MaterialManageController {
         }
     }
 
+
+    /**
+     * 将数据库中的物资记录以物资表格供前端下载
+     */
+    @GetMapping("/websocketTest")
+    public String test(String message)  throws Exception{
+        //MaterialUploadExcelWebSocketService.sendInfo(message,"asdf");
+        return "/webSocket/uploadMaterialExcel";
+    }
 
 
 }
