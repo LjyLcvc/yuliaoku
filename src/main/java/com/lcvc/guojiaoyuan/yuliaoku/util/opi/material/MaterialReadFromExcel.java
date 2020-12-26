@@ -1,10 +1,11 @@
 package com.lcvc.guojiaoyuan.yuliaoku.util.opi.material;
 
 import com.lcvc.guojiaoyuan.yuliaoku.model.Material;
-import com.lcvc.guojiaoyuan.yuliaoku.model.exception.MyServiceException;
+import com.lcvc.guojiaoyuan.yuliaoku.model.MaterialType;
+import com.lcvc.guojiaoyuan.yuliaoku.model.base.ExcelException;
+import com.lcvc.guojiaoyuan.yuliaoku.model.exception.MyExcelException;
 import com.lcvc.guojiaoyuan.yuliaoku.util.opi.base.MethorOfPOI;
 import com.lcvc.guojiaoyuan.yuliaoku.util.string.MyStringUtil;
-import com.lcvc.guojiaoyuan.yuliaoku.model.MaterialType;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -32,6 +33,7 @@ public class MaterialReadFromExcel {
      */
     public static Map<MaterialType,List<Material>> getExcel(InputStream inputStream) throws Exception{
         Map<MaterialType,List<Material>> map= new LinkedHashMap<MaterialType,List<Material>>();
+        List<ExcelException> excelExceptions=new ArrayList<ExcelException>();//定义异常集合
         XSSFWorkbook workbook = new XSSFWorkbook(inputStream);//根据输入流创建工作簿对象
         int number=workbook.getNumberOfSheets();//获取工作簿中工作表数量
         for (int i = 0; i < number; i++) {//遍历所有工作表
@@ -50,6 +52,7 @@ public class MaterialReadFromExcel {
             map.put(materialType,materials);//将物料类别-物料的键值存储
             //根据表格的实际记录行数，逐行读取记录——第一行是标题行，不进行读取
             for (int rowNum = 1; rowNum <= sheet.getLastRowNum(); rowNum++) {
+                Material material=new Material();
                 XSSFRow row = sheet.getRow(rowNum);//获取指定的行
                 String idString= MethorOfPOI.getValue(row.getCell(0));//第一列是id，序号
                 if(!StringUtils.isEmpty(idString)){//如果不为空
@@ -57,7 +60,8 @@ public class MaterialReadFromExcel {
                         Integer.parseInt(idString);//转化为数字
                         continue;//如果转换成功，则终止此次循环，即该条记录不导入
                     } catch (NumberFormatException e) {
-                        throw new MyServiceException("操作失败：导入的表格的工作簿（"+name+"）第"+(rowNum+1)+"行的序号列必须是整数");
+                        excelExceptions.add(new ExcelException(name,rowNum+1,1,idString,"序号必须是整数"));
+                        //throw new MyServiceException("操作失败：导入的表格的工作表（"+name+"）第"+(rowNum+1)+"行的序号列必须是整数");
                     }
                 }
                 String chinese=MethorOfPOI.getValue(row.getCell(1));//第2列是中文名
@@ -66,28 +70,38 @@ public class MaterialReadFromExcel {
                 }
                 chinese= MyStringUtil.trimBeginEndAndRetainOneSpaceInMiddle(chinese);//清除前后空格，并保持中间空格最多一个
                 if(chinese.length()>50){
-                    throw new MyServiceException("操作失败：导入的表格的工作簿（"+name+"）第"+(rowNum+1)+"行的中文列长度超过50个字符");
+                    excelExceptions.add(new ExcelException(name,rowNum+1,2,chinese,"中文长度不能超过50个字符"));
+                    //throw new MyServiceException("操作失败：导入的表格的工作簿（"+name+"）第"+(rowNum+1)+"行的中文列长度超过50个字符");
+                }else{//如果验证通过
+                    material.setChinese(chinese);//设置中文名
                 }
-                Material material=new Material();
-                material.setChinese(chinese);//设置中文名
                 String english=MethorOfPOI.getValue(row.getCell(2));
                 if(!StringUtils.isEmpty(english)){//如果不为空
                     english=MyStringUtil.trimBeginEndAndRetainOneSpaceInMiddle(english);//清除前后空格，并保持中间空格最多一个
                     if(english.length()>200){
-                        throw new MyServiceException("操作失败：导入的表格的工作簿（"+name+"）第"+(rowNum+1)+"行的英文文列长度超过200个字符");
+                        excelExceptions.add(new ExcelException(name,rowNum+1,3,english,"英文长度不能超过200个字符"));
+                        //throw new MyServiceException("操作失败：导入的表格的工作簿（"+name+"）第"+(rowNum+1)+"行的英文文列长度超过200个字符");
+                    }else{//如果验证通过
+                        material.setEnglish(english);
                     }
-                    material.setEnglish(english);
                 }
                 String spanish=MethorOfPOI.getValue(row.getCell(3));
                 if(!StringUtils.isEmpty(spanish)){//如果不为空
                     spanish=MyStringUtil.trimBeginEndAndRetainOneSpaceInMiddle(spanish);//清除前后空格，并保持中间空格最多一个
                     if(spanish.length()>200){
-                        throw new MyServiceException("操作失败：导入的表格的工作簿（"+name+"）第"+(rowNum+1)+"行的西文文列长度超过200个字符");
+                        excelExceptions.add(new ExcelException(name,rowNum+1,4,spanish,"西文长度不能超过200个字符"));
+                        //throw new MyServiceException("操作失败：导入的表格的工作簿（"+name+"）第"+(rowNum+1)+"行的西文文列长度超过200个字符");
+                    }else{//如果验证通过
+                        material.setSpanish(spanish);
                     }
-                    material.setSpanish(spanish);
                 }
-                materials.add(material);//将该记录添加到集合中
+                if(material.getChinese()!=null||material.getEnglish()!=null||material.getSpanish()!=null){//如果该行验证通过
+                    materials.add(material);//将该记录添加到集合中
+                }
             }
+        }
+        if(excelExceptions.size()>0){//如果存在异常
+            throw new MyExcelException(excelExceptions);
         }
         return map;
     }

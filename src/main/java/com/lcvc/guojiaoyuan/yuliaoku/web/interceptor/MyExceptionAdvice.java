@@ -1,7 +1,11 @@
 package com.lcvc.guojiaoyuan.yuliaoku.web.interceptor;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.lcvc.guojiaoyuan.yuliaoku.model.base.Constant;
+import com.lcvc.guojiaoyuan.yuliaoku.model.base.ExcelException;
 import com.lcvc.guojiaoyuan.yuliaoku.model.base.JsonCode;
+import com.lcvc.guojiaoyuan.yuliaoku.model.exception.MyExcelException;
 import com.lcvc.guojiaoyuan.yuliaoku.model.exception.MyServiceException;
 import com.lcvc.guojiaoyuan.yuliaoku.model.exception.MyWebException;
 import org.apache.commons.logging.Log;
@@ -49,6 +53,16 @@ public class MyExceptionAdvice {
         map.put(Constant.JSON_MESSAGE, e.getMessage());
         map.put(Constant.JSON_CODE, JsonCode.ERROR.getValue());//返回错误信息
         //log.error("前端提交异常", e.getMessage());
+        return map;
+    }
+
+    @ExceptionHandler
+    public Map<String, Object> myExcelException(MyExcelException e) {
+        Map<String, Object> map=new HashMap<String, Object>();
+        Gson gson = new Gson();
+        //map.put(Constant.JSON_MESSAGE, e.getMessage());//将错误信息从JSON转换为list集合
+        map.put(Constant.JSON_MESSAGE, gson.fromJson(e.getMessage(), new TypeToken<List<ExcelException>>(){}.getType()));//将错误信息从JSON转换为list集合
+        map.put(Constant.JSON_CODE, JsonCode.ERROR.getValue());//返回错误信息
         return map;
     }
 
